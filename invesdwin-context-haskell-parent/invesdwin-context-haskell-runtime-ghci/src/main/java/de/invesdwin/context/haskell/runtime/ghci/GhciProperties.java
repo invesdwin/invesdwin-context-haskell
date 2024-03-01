@@ -7,19 +7,18 @@ import de.invesdwin.context.system.properties.SystemProperties;
 @ThreadSafe
 public final class GhciProperties {
 
-    public static final String JULIA_COMMAND;
+    public static final String GHCI_COMMAND;
 
     static {
 
         final SystemProperties systemProperties = new SystemProperties(GhciProperties.class);
-        if (systemProperties.containsValue("JULIA_COMMAND")) {
-            JULIA_COMMAND = systemProperties.getString("JULIA_COMMAND");
+        if (systemProperties.containsValue("GHCI_COMMAND")) {
+            GHCI_COMMAND = systemProperties.getString("GHCI_COMMAND");
         } else {
-            JULIA_COMMAND = null;
+            GHCI_COMMAND = null;
         }
     }
 
-    private GhciProperties() {
-    }
+    private GhciProperties() {}
 
 }

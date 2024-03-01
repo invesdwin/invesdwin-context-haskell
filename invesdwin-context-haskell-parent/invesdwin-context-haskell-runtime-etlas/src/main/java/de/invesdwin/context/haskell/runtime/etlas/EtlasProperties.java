@@ -7,19 +7,18 @@ import de.invesdwin.context.system.properties.SystemProperties;
 @ThreadSafe
 public final class EtlasProperties {
 
-    public static final String JULIA_COMMAND;
+    public static final String ETLAS_COMMAND;
 
     static {
 
         final SystemProperties systemProperties = new SystemProperties(EtlasProperties.class);
-        if (systemProperties.containsValue("JULIA_COMMAND")) {
-            JULIA_COMMAND = systemProperties.getString("JULIA_COMMAND");
+        if (systemProperties.containsValue("ETLAS_COMMAND")) {
+            ETLAS_COMMAND = systemProperties.getString("ETLAS_COMMAND");
         } else {
-            JULIA_COMMAND = null;
+            ETLAS_COMMAND = null;
         }
     }
 
-    private EtlasProperties() {
-    }
+    private EtlasProperties() {}
 
 }

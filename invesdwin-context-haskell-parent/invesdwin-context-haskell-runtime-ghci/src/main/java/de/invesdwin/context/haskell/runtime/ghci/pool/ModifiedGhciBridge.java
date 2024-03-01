@@ -66,7 +66,7 @@ public class ModifiedGhciBridge {
      */
     public ModifiedGhciBridge() {
         final List<String> j = new ArrayList<String>();
-        j.add(GhciProperties.JULIA_COMMAND);
+        j.add(GhciProperties.GHCI_COMMAND);
         j.addAll(Arrays.asList(JULIA_ARGS));
         jbuilder = new ProcessBuilder(j);
         this.mapper = MarshallerJsonJackson.getInstance().getJsonMapper(false);

@@ -66,7 +66,7 @@ public class ModifiedEtlasBridge {
      */
     public ModifiedEtlasBridge() {
         final List<String> j = new ArrayList<String>();
-        j.add(EtlasProperties.JULIA_COMMAND);
+        j.add(EtlasProperties.ETLAS_COMMAND);
         j.addAll(Arrays.asList(JULIA_ARGS));
         jbuilder = new ProcessBuilder(j);
         this.mapper = MarshallerJsonJackson.getInstance().getJsonMapper(false);
