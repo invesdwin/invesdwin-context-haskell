@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import de.invesdwin.context.haskell.runtime.contract.InputsAndResultsTests;
 import de.invesdwin.context.haskell.runtime.contract.callback.ParametersAndReturnsTests;
 import de.invesdwin.context.haskell.runtime.contract.callback.SimpleCallbackTest;
-import de.invesdwin.context.haskell.runtime.etlas.EtlasScriptTaskRunnerHaskell;
 import de.invesdwin.context.test.ATest;
 import jakarta.inject.Inject;
 
