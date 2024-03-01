@@ -12,19 +12,19 @@ import de.invesdwin.util.concurrent.lock.disabled.DisabledLock;
 @NotThreadSafe
 public class EtlasScriptTaskEngineHaskell implements IScriptTaskEngine {
 
-    private ExtendedEtlasBridge juliaCaller;
+    private ExtendedEtlasBridge bridge;
     private final EtlasScriptTaskInputsHaskell inputs;
     private final EtlasScriptTaskResultsHaskell results;
 
-    public EtlasScriptTaskEngineHaskell(final ExtendedEtlasBridge juliaCaller) {
-        this.juliaCaller = juliaCaller;
+    public EtlasScriptTaskEngineHaskell(final ExtendedEtlasBridge bridge) {
+        this.bridge = bridge;
         this.inputs = new EtlasScriptTaskInputsHaskell(this);
         this.results = new EtlasScriptTaskResultsHaskell(this);
     }
 
     @Override
     public void eval(final String expression) {
-        juliaCaller.eval(expression);
+        bridge.eval(expression);
     }
 
     @Override
@@ -39,12 +39,12 @@ public class EtlasScriptTaskEngineHaskell implements IScriptTaskEngine {
 
     @Override
     public void close() {
-        juliaCaller = null;
+        bridge = null;
     }
 
     @Override
     public ExtendedEtlasBridge unwrap() {
-        return juliaCaller;
+        return bridge;
     }
 
     /**

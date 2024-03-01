@@ -29,7 +29,7 @@ public final class FregeScriptTaskRunnerHaskell
     @Override
     public <T> T run(final AScriptTaskHaskell<T> scriptTask) {
         //get session
-        final ExtendedFregeBridge juliaCaller = FregeObjectPool.INSTANCE.borrowObject();
+        final ExtendedFregeBridge bridge = FregeObjectPool.INSTANCE.borrowObject();
         final IScriptTaskCallback callback = scriptTask.getCallback();
         final SocketScriptTaskCallbackContext context;
         if (callback != null) {
@@ -39,7 +39,7 @@ public final class FregeScriptTaskRunnerHaskell
         }
         try {
             //inputs
-            final FregeScriptTaskEngineHaskell engine = new FregeScriptTaskEngineHaskell(juliaCaller);
+            final FregeScriptTaskEngineHaskell engine = new FregeScriptTaskEngineHaskell(bridge);
             if (context != null) {
                 context.init(engine);
             }
@@ -56,11 +56,11 @@ public final class FregeScriptTaskRunnerHaskell
             engine.close();
 
             //return
-            FregeObjectPool.INSTANCE.returnObject(juliaCaller);
+            FregeObjectPool.INSTANCE.returnObject(bridge);
             return result;
         } catch (final Throwable t) {
             //we have to destroy instances on exceptions, otherwise e.g. SFrontiers.jl might get stuck with some inconsistent state
-            FregeObjectPool.INSTANCE.invalidateObject(juliaCaller);
+            FregeObjectPool.INSTANCE.invalidateObject(bridge);
             throw Throwables.propagate(t);
         } finally {
             if (context != null) {

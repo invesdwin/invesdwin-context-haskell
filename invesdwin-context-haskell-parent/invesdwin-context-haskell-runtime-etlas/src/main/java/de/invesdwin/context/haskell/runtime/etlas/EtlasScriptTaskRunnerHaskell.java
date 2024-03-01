@@ -29,7 +29,7 @@ public final class EtlasScriptTaskRunnerHaskell
     @Override
     public <T> T run(final AScriptTaskHaskell<T> scriptTask) {
         //get session
-        final ExtendedEtlasBridge juliaCaller = EtlasObjectPool.INSTANCE.borrowObject();
+        final ExtendedEtlasBridge bridge = EtlasObjectPool.INSTANCE.borrowObject();
         final IScriptTaskCallback callback = scriptTask.getCallback();
         final SocketScriptTaskCallbackContext context;
         if (callback != null) {
@@ -39,7 +39,7 @@ public final class EtlasScriptTaskRunnerHaskell
         }
         try {
             //inputs
-            final EtlasScriptTaskEngineHaskell engine = new EtlasScriptTaskEngineHaskell(juliaCaller);
+            final EtlasScriptTaskEngineHaskell engine = new EtlasScriptTaskEngineHaskell(bridge);
             if (context != null) {
                 context.init(engine);
             }
@@ -56,11 +56,11 @@ public final class EtlasScriptTaskRunnerHaskell
             engine.close();
 
             //return
-            EtlasObjectPool.INSTANCE.returnObject(juliaCaller);
+            EtlasObjectPool.INSTANCE.returnObject(bridge);
             return result;
         } catch (final Throwable t) {
             //we have to destroy instances on exceptions, otherwise e.g. SFrontiers.jl might get stuck with some inconsistent state
-            EtlasObjectPool.INSTANCE.invalidateObject(juliaCaller);
+            EtlasObjectPool.INSTANCE.invalidateObject(bridge);
             throw Throwables.propagate(t);
         } finally {
             if (context != null) {

@@ -29,7 +29,7 @@ public final class GhciScriptTaskRunnerJulia
     @Override
     public <T> T run(final AScriptTaskHaskell<T> scriptTask) {
         //get session
-        final ExtendedGhciBridge juliaCaller = GhciObjectPool.INSTANCE.borrowObject();
+        final ExtendedGhciBridge bridge = GhciObjectPool.INSTANCE.borrowObject();
         final IScriptTaskCallback callback = scriptTask.getCallback();
         final SocketScriptTaskCallbackContext context;
         if (callback != null) {
@@ -39,7 +39,7 @@ public final class GhciScriptTaskRunnerJulia
         }
         try {
             //inputs
-            final GhciScriptTaskEngineJulia engine = new GhciScriptTaskEngineJulia(juliaCaller);
+            final GhciScriptTaskEngineJulia engine = new GhciScriptTaskEngineJulia(bridge);
             if (context != null) {
                 context.init(engine);
             }
@@ -56,11 +56,11 @@ public final class GhciScriptTaskRunnerJulia
             engine.close();
 
             //return
-            GhciObjectPool.INSTANCE.returnObject(juliaCaller);
+            GhciObjectPool.INSTANCE.returnObject(bridge);
             return result;
         } catch (final Throwable t) {
             //we have to destroy instances on exceptions, otherwise e.g. SFrontiers.jl might get stuck with some inconsistent state
-            GhciObjectPool.INSTANCE.invalidateObject(juliaCaller);
+            GhciObjectPool.INSTANCE.invalidateObject(bridge);
             throw Throwables.propagate(t);
         } finally {
             if (context != null) {

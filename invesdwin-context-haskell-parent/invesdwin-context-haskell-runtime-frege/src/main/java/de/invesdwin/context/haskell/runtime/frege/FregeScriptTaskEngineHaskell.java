@@ -12,19 +12,19 @@ import de.invesdwin.util.concurrent.lock.disabled.DisabledLock;
 @NotThreadSafe
 public class FregeScriptTaskEngineHaskell implements IScriptTaskEngine {
 
-    private ExtendedFregeBridge juliaCaller;
+    private ExtendedFregeBridge bridge;
     private final FregeScriptTaskInputsHaskell inputs;
     private final FregeScriptTaskResultsHaskell results;
 
-    public FregeScriptTaskEngineHaskell(final ExtendedFregeBridge juliaCaller) {
-        this.juliaCaller = juliaCaller;
+    public FregeScriptTaskEngineHaskell(final ExtendedFregeBridge bridge) {
+        this.bridge = bridge;
         this.inputs = new FregeScriptTaskInputsHaskell(this);
         this.results = new FregeScriptTaskResultsHaskell(this);
     }
 
     @Override
     public void eval(final String expression) {
-        juliaCaller.eval(expression);
+        bridge.eval(expression);
     }
 
     @Override
@@ -39,12 +39,12 @@ public class FregeScriptTaskEngineHaskell implements IScriptTaskEngine {
 
     @Override
     public void close() {
-        juliaCaller = null;
+        bridge = null;
     }
 
     @Override
     public ExtendedFregeBridge unwrap() {
-        return juliaCaller;
+        return bridge;
     }
 
     /**

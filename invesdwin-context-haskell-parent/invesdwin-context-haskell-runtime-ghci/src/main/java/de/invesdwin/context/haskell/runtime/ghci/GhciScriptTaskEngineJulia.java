@@ -12,19 +12,19 @@ import de.invesdwin.util.concurrent.lock.disabled.DisabledLock;
 @NotThreadSafe
 public class GhciScriptTaskEngineJulia implements IScriptTaskEngine {
 
-    private ExtendedGhciBridge juliaCaller;
+    private ExtendedGhciBridge bridge;
     private final GhciScriptTaskInputsJulia inputs;
     private final GhciScriptTaskResultsJulia results;
 
-    public GhciScriptTaskEngineJulia(final ExtendedGhciBridge juliaCaller) {
-        this.juliaCaller = juliaCaller;
+    public GhciScriptTaskEngineJulia(final ExtendedGhciBridge bridge) {
+        this.bridge = bridge;
         this.inputs = new GhciScriptTaskInputsJulia(this);
         this.results = new GhciScriptTaskResultsJulia(this);
     }
 
     @Override
     public void eval(final String expression) {
-        juliaCaller.eval(expression);
+        bridge.eval(expression);
     }
 
     @Override
@@ -39,12 +39,12 @@ public class GhciScriptTaskEngineJulia implements IScriptTaskEngine {
 
     @Override
     public void close() {
-        juliaCaller = null;
+        bridge = null;
     }
 
     @Override
     public ExtendedGhciBridge unwrap() {
-        return juliaCaller;
+        return bridge;
     }
 
     /**
