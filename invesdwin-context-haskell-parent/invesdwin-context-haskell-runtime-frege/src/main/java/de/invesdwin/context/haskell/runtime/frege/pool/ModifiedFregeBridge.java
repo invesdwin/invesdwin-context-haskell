@@ -7,7 +7,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -15,7 +14,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 
-import de.invesdwin.context.ContextProperties;
 import de.invesdwin.context.haskell.runtime.contract.IScriptTaskRunnerHaskell;
 import de.invesdwin.context.integration.marshaller.MarshallerJsonJackson;
 import de.invesdwin.context.system.properties.SystemProperties;
@@ -24,8 +22,6 @@ import de.invesdwin.util.concurrent.loop.ASpinWait;
 import de.invesdwin.util.concurrent.loop.LoopInterruptedCheck;
 import de.invesdwin.util.error.Throwables;
 import de.invesdwin.util.lang.Closeables;
-import de.invesdwin.util.lang.Files;
-import de.invesdwin.util.lang.string.Charsets;
 import de.invesdwin.util.lang.string.Strings;
 import de.invesdwin.util.streams.buffer.bytes.ByteBuffers;
 import de.invesdwin.util.streams.buffer.bytes.IByteBuffer;
@@ -52,8 +48,6 @@ public class ModifiedFregeBridge {
     private static final String TERMINATOR_SUFFIX = "\nputStrLn " + TERMINATOR;
     private static final byte[] TERMINATOR_SUFFIX_BYTES = TERMINATOR_SUFFIX.getBytes();
 
-    private static final AtomicLong SCRIPT_COUNTER = new AtomicLong();
-
     private final ProcessBuilder jbuilder;
     private Process frege = null;
     private InputStream inp = null;
@@ -66,7 +60,6 @@ public class ModifiedFregeBridge {
     private final ObjectMapper mapper;
 
     private final List<String> rsp = new ArrayList<>();
-    private final File scriptFile;
 
     ////// public API
 
@@ -91,14 +84,6 @@ public class ModifiedFregeBridge {
         j.add(frege.repl.FregeRepl.class.getName());
         jbuilder = new ProcessBuilder(j);
         this.mapper = MarshallerJsonJackson.getInstance().getJsonMapper(false);
-        this.scriptFile = new File(
-                new File(ContextProperties.TEMP_DIRECTORY, ModifiedFregeBridge.class.getSimpleName()),
-                "script_" + SCRIPT_COUNTER.incrementAndGet() + ".fr");
-        try {
-            Files.forceMkdirParent(scriptFile);
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     //CHECKSTYLE:OFF
@@ -178,7 +163,6 @@ public class ModifiedFregeBridge {
         Closeables.closeQuietly(out);
         out = null;
         ver = null;
-        Files.deleteQuietly(scriptFile);
     }
 
     /**
@@ -193,14 +177,7 @@ public class ModifiedFregeBridge {
         try {
             flush();
             IScriptTaskRunnerHaskell.LOG.debug(logMessage, logArgs);
-
-            if (jcode.contains("\n")) {
-                Files.writeStringToFile(scriptFile, jcode, Charsets.UTF_8);
-                out.write(":load ".getBytes());
-                out.write(scriptFile.getAbsolutePath().getBytes());
-            } else {
-                out.write(jcode.getBytes());
-            }
+            out.write(jcode.getBytes());
             out.write(TERMINATOR_SUFFIX_BYTES);
             out.write(NEW_LINE);
             out.flush();
@@ -224,6 +201,28 @@ public class ModifiedFregeBridge {
         } catch (final IOException ex) {
             throw new RuntimeException("FregeBridge connection broken", ex);
         }
+    }
+
+    /**
+     * Sets a variable in the Frege environment.
+     *
+     * @param varname
+     *            name of the variable.
+     * @param value
+     *            value to bind to the variable.
+     */
+    public void set(final String varname, final String value) {
+        final StringBuilder command = new StringBuilder(varname);
+        command.append(" = ");
+        if (value == null) {
+            command.append("nothing");
+        } else {
+            command.append("raw\"");
+            command.append(value.replace("\"", "\\\""));
+            command.append("\"");
+        }
+        final String commandStr = command.toString();
+        exec(commandStr, "> %s", commandStr);
     }
 
     public JsonNode getAsJsonNode(final String variable) {
