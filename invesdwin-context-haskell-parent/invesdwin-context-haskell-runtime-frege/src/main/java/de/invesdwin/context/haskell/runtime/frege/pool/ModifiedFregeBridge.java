@@ -10,8 +10,6 @@ import java.util.List;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
-import org.apache.commons.lang3.mutable.MutableInt;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
@@ -316,36 +314,6 @@ public class ModifiedFregeBridge {
         while (inp.available() > 0) {
             inp.read();
         }
-    }
-
-    private int read(final byte[] buf) throws IOException {
-        final MutableInt ofs = new MutableInt(0);
-        //WORKAROUND: sleeping 10 ms between messages is way too slow
-        final ASpinWait spinWait = new ASpinWait() {
-            @Override
-            public boolean isConditionFulfilled() throws Exception {
-                if (interruptedCheck.check()) {
-                    checkError();
-                }
-                int n = inp.available();
-                while (n > 0 && !Thread.interrupted()) {
-                    final int m = buf.length - ofs.intValue();
-                    ofs.add(inp.read(buf, ofs.intValue(), n > m ? m : n));
-                    if (ofs.intValue() == buf.length) {
-                        return true;
-                    }
-                    n = inp.available();
-                }
-                return false;
-            }
-        };
-        try {
-            spinWait.awaitFulfill(System.nanoTime());
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-        IScriptTaskRunnerHaskell.LOG.trace("< (" + ofs + " bytes)");
-        return ofs.intValue();
     }
 
     private String readline() throws IOException {
