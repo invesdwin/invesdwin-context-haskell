@@ -37,7 +37,13 @@ import de.invesdwin.util.time.duration.Duration;
 @NotThreadSafe
 public class ModifiedFregeBridge {
 
-    public static final String IMPORT_DATA_JSON = "import Data.JSON";
+    public static final String VALUE_START = "__##@VALUE@##__[";
+    public static final String VALUE_END = "]__##@VALUE@##__";
+    public static final String LENGTH_PREFIX = "__##@LENGTH@##__=";
+    public static final String STARTUP_SCRIPT = "import Data.JSON\n__get__ variable = do putStrLn ( \"" + LENGTH_PREFIX
+            + "\" ++ show ( length ( __ans__ ) ) ) ; putStrLn \"" + VALUE_START + "\" ; putStrLn __ans__ ; putStrLn \""
+            + VALUE_END + "\" where __ans__ = show ( toJSON ( variable ) )";
+    private static final String PROMPT = "frege> ";
     private static final char NEW_LINE = '\n';
     private static final String TERMINATOR_RAW = "__##@@##__";
     private static final String TERMINATOR = "\"" + TERMINATOR_RAW + "\"";
@@ -54,7 +60,6 @@ public class ModifiedFregeBridge {
     private final IByteBuffer readLineBuffer = ByteBuffers.allocateExpandable();
     private int readLineBufferPosition = 0;
     private final ObjectMapper mapper;
-    private int ansCounter = 0;
 
     private final List<String> rsp = new ArrayList<>();
 
@@ -134,8 +139,7 @@ public class ModifiedFregeBridge {
             }
             if (s.startsWith("Welcome to Frege")) {
                 ver = s;
-                out.write(IMPORT_DATA_JSON.getBytes());
-                out.write(NEW_LINE);
+                out.write(STARTUP_SCRIPT.getBytes());
                 out.write(TERMINATOR_SUFFIX_BYTES);
                 out.write(NEW_LINE);
                 out.flush();
@@ -188,7 +192,7 @@ public class ModifiedFregeBridge {
                 if (Strings.equalsAny(s, TERMINATOR_RAW, TERMINATOR)) {
                     return;
                 }
-                if (Strings.startsWith(s, "frege>")) {
+                if (Strings.startsWith(s, PROMPT)) {
                     continue;
                 }
                 if (Strings.equals(s, "()")) {
@@ -224,19 +228,14 @@ public class ModifiedFregeBridge {
     }
 
     public JsonNode getAsJsonNode(final String variable) {
-        final String ansVariable = "__ans__" + ansCounter + "__";
-        ansCounter++;
         final StringBuilder message = new StringBuilder();
-        message.append(ansVariable);
-        message.append(" = show ( toJSON ( ");
+        message.append("__get__ ( ");
         message.append(variable);
-        message.append(" ) )");
-        message.append("\nputStrLn ( show ( length ( ");
-        message.append(ansVariable);
-        message.append(" ) ) )");
+        message.append(" )");
+
         exec(message.toString(), "> get %s", variable);
 
-        final String result = get(ansVariable);
+        final String result = get();
         try {
             final JsonNode node = mapper.readTree(result);
             checkError();
@@ -254,37 +253,49 @@ public class ModifiedFregeBridge {
         }
     }
 
-    private String get(final String ansVariable) {
+    private String get() {
         if (rsp.size() < 1) {
             throw new RuntimeException("Invalid response from Frege REPL");
         }
-        try {
-            //WORKAROUND: always extract the last output as the type because the executed code might have printed another line
-            final int n = Integer.parseInt(rsp.get(rsp.size() - 1));
-            if (n == 0) {
-                //Missing or Nothing
-                return null;
-            }
-            write("putStrLn " + ansVariable);
-            while (true) {
-                final String s = readline();
-                if (s == null) {
-                    //retry, we were a bit too fast as it seems
-                    continue;
-                }
-                if (Strings.equals(s, "()")) {
-                    continue;
-                }
-                if (Strings.startsWith(s, "frege>")) {
-                    break;
-                }
-            }
-            final byte[] buf = new byte[n];
-            read(buf);
-            return new String(buf);
-        } catch (final IOException ex) {
-            throw new RuntimeException("FregeBridge connection broken", ex);
+        //WORKAROUND: always extract the last output as the type because the executed code might have printed another line
+        final int n = getRspLength();
+        if (n == 0) {
+            //Missing or Nothing
+            return null;
         }
+        final StringBuilder sb = new StringBuilder();
+        boolean append = false;
+        for (int i = 0; i < rsp.size(); i++) {
+            final String line = rsp.get(i);
+            if (line.equals(VALUE_START)) {
+                append = true;
+                continue;
+            }
+            if (line.equals(VALUE_END)) {
+                break;
+            }
+            if (append) {
+                if (sb.length() > 0) {
+                    sb.append("\n");
+                }
+                sb.append(line);
+            }
+        }
+        if (sb.length() != n) {
+            throw new IllegalStateException(
+                    "resultLength[" + sb.length() + "] != expectedLength[" + n + "]: " + sb.toString());
+        }
+        return sb.toString();
+    }
+
+    private int getRspLength() {
+        for (int i = rsp.size() - 1; i >= 0; i--) {
+            final String line = rsp.get(i);
+            if (line.startsWith(LENGTH_PREFIX)) {
+                return Integer.parseInt(Strings.removeStart(line, LENGTH_PREFIX.length()));
+            }
+        }
+        throw new IllegalStateException(Strings.join(rsp, "\n"));
     }
 
     /**
@@ -300,13 +311,6 @@ public class ModifiedFregeBridge {
     }
 
     ////// private stuff
-
-    private void write(final String s) throws IOException {
-        IScriptTaskRunnerHaskell.LOG.trace("> " + s);
-        out.write(s.getBytes());
-        out.write(NEW_LINE);
-        out.flush();
-    }
 
     private void flush() throws IOException {
         while (inp.available() > 0) {
@@ -379,10 +383,13 @@ public class ModifiedFregeBridge {
     }
 
     protected void checkError() {
+        boolean prevLineIsPrompt = false;
         for (int i = 0; i < rsp.size(); i++) {
-            if (rsp.get(i).startsWith("E ")) {
+            final String line = rsp.get(i);
+            if (prevLineIsPrompt && line.startsWith("E ")) {
                 throw new IllegalStateException(Strings.join(rsp, "\n"));
             }
+            prevLineIsPrompt = line.startsWith(PROMPT);
         }
 
         final String error = getErrWatcher().getErrorMessage();
