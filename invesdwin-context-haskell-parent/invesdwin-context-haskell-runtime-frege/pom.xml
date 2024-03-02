@@ -16,12 +16,6 @@
 			<artifactId>invesdwin-context-haskell-runtime-contract</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>de.invesdwin</groupId>
-			<artifactId>invesdwin-context-haskell-runtime-contract</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.frege-lang</groupId>
 			<artifactId>frege</artifactId>
 		</dependency>
