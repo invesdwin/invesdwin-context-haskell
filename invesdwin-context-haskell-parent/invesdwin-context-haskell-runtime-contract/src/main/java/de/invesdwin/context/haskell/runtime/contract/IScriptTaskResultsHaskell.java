@@ -6,24 +6,28 @@ public interface IScriptTaskResultsHaskell extends IScriptTaskResults {
 
     @Override
     default boolean isDefined(final String variable) {
-        return getBoolean("isdefined(Main, :" + variable + ")");
+        return !isNull(variable);
     }
 
     default boolean isDefinedNotNull(final String variable) {
-        return getBoolean("isdefined(Main, :" + variable + ") && !isnothing(" + variable + ")");
+        return !isNull(variable);
     }
 
     default boolean isNotDefinedOrNull(final String variable) {
-        return getBoolean("!isdefined(Main, :" + variable + ") || isnothing(" + variable + ")");
+        return isNull(variable);
     }
 
     @Override
     default boolean isNull(final String variable) {
-        return getBoolean("isnothing(" + variable + ")");
+        return getBoolean("show ( typeOf ( " + variable + " ) ) == \"Nothing\" ");
     }
 
     default boolean isEmpty(final String variable) {
-        return getBoolean("isempty(" + variable + ")");
+        return getBoolean("length (" + variable + ") == 0");
+    }
+
+    default int length(final String variable) {
+        return getInteger("length (" + variable + ")");
     }
 
 }

@@ -28,23 +28,24 @@ public class InputsAndResultsTestNull {
             @Override
             public void executeScript(final IScriptTaskEngine engine) {
                 final IScriptTaskResultsHaskell cResults = (IScriptTaskResultsHaskell) engine.getResults();
-                //the variable might have been defined by a previous run, thus allow null too
-                Assertions.checkTrue(cResults.isNotDefinedOrNull("testVariable"));
-                Assertions.checkFalse(cResults.isDefinedNotNull("testVariable"));
-                engine.getInputs().putNull("testVariable");
-                Assertions.checkFalse(cResults.isNotDefined("testVariable"));
-                Assertions.checkTrue(cResults.isDefined("testVariable"));
-                Assertions.checkTrue(cResults.isNull("testVariable"));
-                Assertions.checkFalse(cResults.isNotNull("testVariable"));
-                engine.getInputs().putString("testVariable", "value");
-                Assertions.checkFalse(cResults.isNotDefined("testVariable"));
-                Assertions.checkTrue(cResults.isDefined("testVariable"));
-                Assertions.checkFalse(cResults.isNull("testVariable"));
-                Assertions.checkTrue(cResults.isNotNull("testVariable"));
-                //there is no remove in julia, thus we have to check for null as well
-                engine.getInputs().remove("testVariable");
-                Assertions.checkTrue(cResults.isNotDefinedOrNull("testVariable"));
-                Assertions.checkFalse(cResults.isDefinedNotNull("testVariable"));
+                //Frege does not support checking for undefined variables, also variables can only be set once (only constants are supported actually)
+                //                Assertions.checkTrue(cResults.isNotDefinedOrNull("testVariable"));
+                //                Assertions.checkFalse(cResults.isDefinedNotNull("testVariable"));
+                //we treat null (empty string in frege because Nothing/null does not work) as undefined
+                engine.getInputs().putNull("testVariableNull");
+                Assertions.checkTrue(cResults.isNotDefined("testVariableNull"));
+                Assertions.checkFalse(cResults.isDefined("testVariableNull"));
+                Assertions.checkTrue(cResults.isNull("testVariableNull"));
+                Assertions.checkFalse(cResults.isNotNull("testVariableNull"));
+                engine.getInputs().putString("testVariableValue", "value");
+                Assertions.checkFalse(cResults.isNotDefined("testVariableValue"));
+                Assertions.checkTrue(cResults.isDefined("testVariableValue"));
+                Assertions.checkFalse(cResults.isNull("testVariableValue"));
+                Assertions.checkTrue(cResults.isNotNull("testVariableValue"));
+                //there is no remove in Haskell, thus we have to check for null as well
+                engine.getInputs().remove("testVariableRemove");
+                Assertions.checkTrue(cResults.isNotDefinedOrNull("testVariableRemove"));
+                Assertions.checkFalse(cResults.isDefinedNotNull("testVariableRemove"));
 
             }
 

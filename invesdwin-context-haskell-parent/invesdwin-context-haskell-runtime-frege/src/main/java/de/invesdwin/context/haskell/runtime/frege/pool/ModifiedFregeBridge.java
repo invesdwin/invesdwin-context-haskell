@@ -13,6 +13,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 import de.invesdwin.context.haskell.runtime.contract.IScriptTaskRunnerHaskell;
 import de.invesdwin.context.integration.marshaller.MarshallerJsonJackson;
@@ -217,6 +218,13 @@ public class ModifiedFregeBridge {
             checkError();
             if (result == null) {
                 checkErrorDelayed();
+            }
+            if (node instanceof TextNode) {
+                //Frege does not support Nothing/null, we emulate it with an empty string
+                final TextNode cNode = (TextNode) node;
+                if (Strings.isBlankOrNullText(cNode.asText())) {
+                    return null;
+                }
             }
             if (node instanceof NullNode) {
                 return null;

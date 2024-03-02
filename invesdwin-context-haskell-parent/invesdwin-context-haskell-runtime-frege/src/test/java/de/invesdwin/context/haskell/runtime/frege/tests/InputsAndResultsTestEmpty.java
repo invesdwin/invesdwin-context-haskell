@@ -7,6 +7,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import org.springframework.core.io.ClassPathResource;
 
 import de.invesdwin.context.haskell.runtime.contract.AScriptTaskHaskell;
+import de.invesdwin.context.haskell.runtime.contract.IScriptTaskResultsHaskell;
 import de.invesdwin.context.haskell.runtime.contract.IScriptTaskRunnerHaskell;
 import de.invesdwin.context.integration.script.IScriptTaskEngine;
 import de.invesdwin.context.integration.script.IScriptTaskInputs;
@@ -157,72 +158,118 @@ public class InputsAndResultsTestEmpty {
 
             @Override
             public Void extractResults(final IScriptTaskResults results) {
-                Assertions.checkEquals(putBooleanVector, results.getBooleanVector("getBooleanVector"));
-                Assertions.checkEquals(putBooleanVectorAsList,
-                        results.getBooleanVectorAsList("getBooleanVectorAsList"));
-                Assertions.checkEquals(putBooleanMatrix, results.getBooleanMatrix("getBooleanMatrix"));
-                Assertions.checkEquals(putBooleanMatrixAsList,
-                        results.getBooleanMatrixAsList("getBooleanMatrixAsList"));
-
-                Assertions.checkEquals(putByteVector, results.getByteVector("getByteVector"));
-                Assertions.checkEquals(putByteVectorAsList, results.getByteVectorAsList("getByteVectorAsList"));
-                Assertions.checkEquals(putByteMatrix, results.getByteMatrix("getByteMatrix"));
-                Assertions.checkEquals(putByteMatrixAsList, results.getByteMatrixAsList("getByteMatrixAsList"));
-
-                Assertions.checkEquals(putCharacterVector, results.getCharacterVector("getCharacterVector"));
-                Assertions.checkEquals(putCharacterVectorAsList,
-                        results.getCharacterVectorAsList("getCharacterVectorAsList"));
-                Assertions.checkEquals(putCharacterMatrix, results.getCharacterMatrix("getCharacterMatrix"));
-                Assertions.checkEquals(putCharacterMatrixAsList,
-                        results.getCharacterMatrixAsList("getCharacterMatrixAsList"));
-
-                Assertions.checkEquals(putDecimalVector, results.getDecimalVector("getDecimalVector"));
-                Assertions.checkEquals(putDecimalVectorAsList,
-                        results.getDecimalVectorAsList("getDecimalVectorAsList"));
-                Assertions.checkEquals(putDecimalMatrix, results.getDecimalMatrix("getDecimalMatrix"));
-                Assertions.checkEquals(putDecimalMatrixAsList,
-                        results.getDecimalMatrixAsList("getDecimalMatrixAsList"));
-
-                Assertions.checkEquals(putDoubleVector, results.getDoubleVector("getDoubleVector"));
-                Assertions.checkEquals(putDoubleVectorAsList, results.getDoubleVectorAsList("getDoubleVectorAsList"));
-                Assertions.checkEquals(putDoubleMatrix, results.getDoubleMatrix("getDoubleMatrix"));
-                Assertions.checkEquals(putDoubleMatrixAsList, results.getDoubleMatrixAsList("getDoubleMatrixAsList"));
-
-                Assertions.checkEquals(putFloatVector, results.getFloatVector("getFloatVector"));
-                Assertions.checkEquals(putFloatVectorAsList, results.getFloatVectorAsList("getFloatVectorAsList"));
-                Assertions.checkEquals(putFloatMatrix, results.getFloatMatrix("getFloatMatrix"));
-                Assertions.checkEquals(putFloatMatrixAsList, results.getFloatMatrixAsList("getFloatMatrixAsList"));
-
-                Assertions.checkEquals(putIntegerVector, results.getIntegerVector("getIntegerVector"));
-                Assertions.checkEquals(putIntegerVectorAsList,
-                        results.getIntegerVectorAsList("getIntegerVectorAsList"));
-                Assertions.checkEquals(putIntegerMatrix, results.getIntegerMatrix("getIntegerMatrix"));
-                Assertions.checkEquals(putIntegerMatrixAsList,
-                        results.getIntegerMatrixAsList("getIntegerMatrixAsList"));
-
-                Assertions.checkEquals(putLongVector, results.getLongVector("getLongVector"));
-                Assertions.checkEquals(putLongVectorAsList, results.getLongVectorAsList("getLongVectorAsList"));
-                Assertions.checkEquals(putLongMatrix, results.getLongMatrix("getLongMatrix"));
-                Assertions.checkEquals(putLongMatrixAsList, results.getLongMatrixAsList("getLongMatrixAsList"));
-
-                Assertions.checkEquals(putPercentVector,
-                        results.getDecimalVector("getPercentVector", Percent.ZERO_PERCENT));
-                Assertions.checkEquals(putPercentVectorAsList,
-                        results.getDecimalVectorAsList("getPercentVectorAsList", Percent.ZERO_PERCENT));
-                Assertions.checkEquals(putPercentMatrix,
-                        results.getDecimalMatrix("getPercentMatrix", Percent.ZERO_PERCENT));
-                Assertions.checkEquals(putPercentMatrixAsList,
-                        results.getDecimalMatrixAsList("getPercentMatrixAsList", Percent.ZERO_PERCENT));
-
-                Assertions.checkEquals(putShortVector, results.getShortVector("getShortVector"));
-                Assertions.checkEquals(putShortVectorAsList, results.getShortVectorAsList("getShortVectorAsList"));
-                Assertions.checkEquals(putShortMatrix, results.getShortMatrix("getShortMatrix"));
-                Assertions.checkEquals(putShortMatrixAsList, results.getShortMatrixAsList("getShortMatrixAsList"));
-
-                Assertions.checkEquals(putStringVector, results.getStringVector("getStringVector"));
-                Assertions.checkEquals(putStringVectorAsList, results.getStringVectorAsList("getStringVectorAsList"));
-                Assertions.checkEquals(putStringMatrix, results.getStringMatrix("getStringMatrix"));
-                Assertions.checkEquals(putStringMatrixAsList, results.getStringMatrixAsList("getStringMatrixAsList"));
+                final IScriptTaskResultsHaskell cResults = (IScriptTaskResultsHaskell) results;
+                //Haskell/Frege toJSON does not support encoding empty arrays
+                //                Assertions.checkEquals(putBooleanVector, results.getBooleanVector("getBooleanVector"));
+                Assertions.checkTrue(cResults.isEmpty("getBooleanVector"));
+                //                Assertions.checkEquals(putBooleanVectorAsList,
+                //                        results.getBooleanVectorAsList("getBooleanVectorAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getBooleanVectorAsList"));
+                //                Assertions.checkEquals(putBooleanMatrix, results.getBooleanMatrix("getBooleanMatrix"));
+                Assertions.checkTrue(cResults.isEmpty("getBooleanVectorAsList"));
+                //                Assertions.checkEquals(putBooleanMatrixAsList,
+                //                        results.getBooleanMatrixAsList("getBooleanMatrixAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getBooleanVectorAsList"));
+                //
+                //                Assertions.checkEquals(putByteVector, results.getByteVector("getByteVector"));
+                Assertions.checkTrue(cResults.isEmpty("getByteVector"));
+                //                Assertions.checkEquals(putByteVectorAsList, results.getByteVectorAsList("getByteVectorAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getByteVectorAsList"));
+                //                Assertions.checkEquals(putByteMatrix, results.getByteMatrix("getByteMatrix"));
+                Assertions.checkTrue(cResults.isEmpty("getByteMatrix"));
+                //                Assertions.checkEquals(putByteMatrixAsList, results.getByteMatrixAsList("getByteMatrixAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getByteMatrixAsList"));
+                //
+                //                Assertions.checkEquals(putCharacterVector, results.getCharacterVector("getCharacterVector"));
+                Assertions.checkTrue(cResults.isEmpty("getCharacterVector"));
+                //                Assertions.checkEquals(putCharacterVectorAsList,
+                //                        results.getCharacterVectorAsList("getCharacterVectorAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getCharacterVectorAsList"));
+                //                Assertions.checkEquals(putCharacterMatrix, results.getCharacterMatrix("getCharacterMatrix"));
+                Assertions.checkTrue(cResults.isEmpty("getCharacterMatrix"));
+                //                Assertions.checkEquals(putCharacterMatrixAsList,
+                //                        results.getCharacterMatrixAsList("getCharacterMatrixAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getCharacterMatrixAsList"));
+                //
+                //                Assertions.checkEquals(putDecimalVector, results.getDecimalVector("getDecimalVector"));
+                Assertions.checkTrue(cResults.isEmpty("getDecimalVector"));
+                //                Assertions.checkEquals(putDecimalVectorAsList,
+                //                        results.getDecimalVectorAsList("getDecimalVectorAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getDecimalVectorAsList"));
+                //                Assertions.checkEquals(putDecimalMatrix, results.getDecimalMatrix("getDecimalMatrix"));
+                Assertions.checkTrue(cResults.isEmpty("getDecimalMatrix"));
+                //                Assertions.checkEquals(putDecimalMatrixAsList,
+                //                        results.getDecimalMatrixAsList("getDecimalMatrixAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getDecimalMatrixAsList"));
+                //
+                //                Assertions.checkEquals(putDoubleVector, results.getDoubleVector("getDoubleVector"));
+                Assertions.checkTrue(cResults.isEmpty("getDoubleVector"));
+                //                Assertions.checkEquals(putDoubleVectorAsList, results.getDoubleVectorAsList("getDoubleVectorAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getDoubleVectorAsList"));
+                //                Assertions.checkEquals(putDoubleMatrix, results.getDoubleMatrix("getDoubleMatrix"));
+                Assertions.checkTrue(cResults.isEmpty("getDoubleMatrix"));
+                //                Assertions.checkEquals(putDoubleMatrixAsList, results.getDoubleMatrixAsList("getDoubleMatrixAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getDoubleMatrixAsList"));
+                //
+                //                Assertions.checkEquals(putFloatVector, results.getFloatVector("getFloatVector"));
+                Assertions.checkTrue(cResults.isEmpty("getFloatVector"));
+                //                Assertions.checkEquals(putFloatVectorAsList, results.getFloatVectorAsList("getFloatVectorAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getFloatVectorAsList"));
+                //                Assertions.checkEquals(putFloatMatrix, results.getFloatMatrix("getFloatMatrix"));
+                Assertions.checkTrue(cResults.isEmpty("getFloatMatrix"));
+                //                Assertions.checkEquals(putFloatMatrixAsList, results.getFloatMatrixAsList("getFloatMatrixAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getFloatMatrixAsList"));
+                //
+                //                Assertions.checkEquals(putIntegerVector, results.getIntegerVector("getIntegerVector"));
+                Assertions.checkTrue(cResults.isEmpty("getIntegerVector"));
+                //                Assertions.checkEquals(putIntegerVectorAsList,
+                //                        results.getIntegerVectorAsList("getIntegerVectorAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getIntegerVectorAsList"));
+                //                Assertions.checkEquals(putIntegerMatrix, results.getIntegerMatrix("getIntegerMatrix"));
+                Assertions.checkTrue(cResults.isEmpty("getIntegerMatrix"));
+                //                Assertions.checkEquals(putIntegerMatrixAsList,
+                //                        results.getIntegerMatrixAsList("getIntegerMatrixAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getIntegerMatrixAsList"));
+                //
+                //                Assertions.checkEquals(putLongVector, results.getLongVector("getLongVector"));
+                Assertions.checkTrue(cResults.isEmpty("getLongVector"));
+                //                Assertions.checkEquals(putLongVectorAsList, results.getLongVectorAsList("getLongVectorAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getLongVectorAsList"));
+                //                Assertions.checkEquals(putLongMatrix, results.getLongMatrix("getLongMatrix"));
+                Assertions.checkTrue(cResults.isEmpty("getLongMatrix"));
+                //                Assertions.checkEquals(putLongMatrixAsList, results.getLongMatrixAsList("getLongMatrixAsList"));
+                Assertions.checkTrue(cResults.isEmpty("putLongMatrixAsList"));
+                //
+                //                Assertions.checkEquals(putPercentVector,
+                //                        results.getDecimalVector("getPercentVector", Percent.ZERO_PERCENT));
+                Assertions.checkTrue(cResults.isEmpty("getPercentVector"));
+                //                Assertions.checkEquals(putPercentVectorAsList,
+                //                        results.getDecimalVectorAsList("getPercentVectorAsList", Percent.ZERO_PERCENT));
+                Assertions.checkTrue(cResults.isEmpty("getPercentVectorAsList"));
+                //                Assertions.checkEquals(putPercentMatrix,
+                //                        results.getDecimalMatrix("getPercentMatrix", Percent.ZERO_PERCENT));
+                Assertions.checkTrue(cResults.isEmpty("getPercentMatrix"));
+                //                Assertions.checkEquals(putPercentMatrixAsList,
+                //                        results.getDecimalMatrixAsList("getPercentMatrixAsList", Percent.ZERO_PERCENT));
+                Assertions.checkTrue(cResults.isEmpty("getPercentMatrixAsList"));
+                //
+                //                Assertions.checkEquals(putShortVector, results.getShortVector("getShortVector"));
+                Assertions.checkTrue(cResults.isEmpty("getShortVector"));
+                //                Assertions.checkEquals(putShortVectorAsList, results.getShortVectorAsList("getShortVectorAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getShortVectorAsList"));
+                //                Assertions.checkEquals(putShortMatrix, results.getShortMatrix("getShortMatrix"));
+                Assertions.checkTrue(cResults.isEmpty("getShortMatrix"));
+                //                Assertions.checkEquals(putShortMatrixAsList, results.getShortMatrixAsList("getShortMatrixAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getShortMatrixAsList"));
+                //
+                //                Assertions.checkEquals(putStringVector, results.getStringVector("getStringVector"));
+                Assertions.checkTrue(cResults.isEmpty("getStringVector"));
+                //                Assertions.checkEquals(putStringVectorAsList, results.getStringVectorAsList("getStringVectorAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getStringVectorAsList"));
+                //                Assertions.checkEquals(putStringMatrix, results.getStringMatrix("getStringMatrix"));
+                Assertions.checkTrue(cResults.isEmpty("getStringMatrix"));
+                //                Assertions.checkEquals(putStringMatrixAsList, results.getStringMatrixAsList("getStringMatrixAsList"));
+                Assertions.checkTrue(cResults.isEmpty("getStringMatrixAsList"));
                 return null;
             }
         }.run(runner);

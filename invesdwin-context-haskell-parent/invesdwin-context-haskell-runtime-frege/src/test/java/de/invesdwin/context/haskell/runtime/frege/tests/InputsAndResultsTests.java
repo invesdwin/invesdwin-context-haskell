@@ -31,12 +31,12 @@ public class InputsAndResultsTests {
         new InputsAndResultsTestInteger(runner).testInteger();
         new InputsAndResultsTestLong(runner).testLong();
         new InputsAndResultsTestCharacter(runner).testCharacter();
-        //        new InputsAndResultsTestString(runner).testString();
+        new InputsAndResultsTestString(runner).testString();
         new InputsAndResultsTestBoolean(runner).testBoolean();
-        //        new InputsAndResultsTestNull(runner).testNull();
-        //        new InputsAndResultsTestNullPutGet(runner).testNullPutGet();
-        //        new InputsAndResultsTestEmpty(runner).testEmpty();
-        //        new InputsAndResultsTestEmptyMatrixValue(runner).testEmptyMatrixValue();
+        new InputsAndResultsTestNull(runner).testNull();
+        new InputsAndResultsTestNullPutGet(runner).testNullPutGet();
+        new InputsAndResultsTestEmpty(runner).testEmpty();
+        new InputsAndResultsTestEmptyMatrixValue(runner).testEmptyMatrixValue();
     }
 
     public void testParallel() {
