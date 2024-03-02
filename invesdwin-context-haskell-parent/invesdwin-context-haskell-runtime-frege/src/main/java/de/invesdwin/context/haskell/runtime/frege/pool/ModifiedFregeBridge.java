@@ -215,7 +215,7 @@ public class ModifiedFregeBridge {
     public JsonNode getAsJsonNode(final String variable) {
         final StringBuilder message = new StringBuilder("__ans__ = JSON.json(");
         message.append(variable);
-        message.append("); println(sizeof(__ans__))");
+        message.append("); putStrLn length __ans__");
         exec(message.toString(), "> get %s", variable);
 
         final String result = get();

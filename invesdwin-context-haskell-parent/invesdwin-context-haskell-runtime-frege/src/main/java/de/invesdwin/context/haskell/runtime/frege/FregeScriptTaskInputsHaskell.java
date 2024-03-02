@@ -18,4 +18,9 @@ public class FregeScriptTaskInputsHaskell extends AScriptTaskInputsHaskellToExpr
         return engine;
     }
 
+    @Override
+    protected String booleanToString(final boolean value) {
+        return String.valueOf(value);
+    }
+
 }
