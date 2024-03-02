@@ -37,6 +37,7 @@ import de.invesdwin.util.time.duration.Duration;
 @NotThreadSafe
 public class ModifiedFregeBridge {
 
+    public static final String IMPORT_DATA_JSON = "import Data.JSON";
     private static final char NEW_LINE = '\n';
     private static final String TERMINATOR_RAW = "__##@@##__";
     private static final String TERMINATOR = "\"" + TERMINATOR_RAW + "\"";
@@ -133,7 +134,7 @@ public class ModifiedFregeBridge {
             }
             if (s.startsWith("Welcome to Frege")) {
                 ver = s;
-                out.write("import Data.JSON".getBytes());
+                out.write(IMPORT_DATA_JSON.getBytes());
                 out.write(NEW_LINE);
                 out.write(TERMINATOR_SUFFIX_BYTES);
                 out.write(NEW_LINE);

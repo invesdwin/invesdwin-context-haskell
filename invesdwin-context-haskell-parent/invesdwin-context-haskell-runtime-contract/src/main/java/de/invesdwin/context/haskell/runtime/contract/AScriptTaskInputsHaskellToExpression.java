@@ -35,6 +35,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
     public void putCharacterMatrix(final String variable, final char[][] value) {
         if (value == null) {
             putNull(variable);
+        } else if (value.length == 0 || value[0].length == 0) {
+            putEmptyMatrix(variable, value.length);
         } else {
             final int rows = value.length;
             final int cols = value[0].length;
@@ -44,14 +46,16 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                 if (row > 0) {
                     sb.append(",");
                 }
+                sb.append("[");
                 for (int col = 0; col < cols; col++) {
                     if (col > 0) {
-                        sb.append(" ");
+                        sb.append(",");
                     }
                     sb.append("'");
                     sb.append(value[row][col]);
                     sb.append("'");
                 }
+                sb.append("]");
             }
             sb.append("]");
             putExpression(variable, sb.toString());
@@ -95,6 +99,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
     public void putStringMatrix(final String variable, final String[][] value) {
         if (value == null) {
             putNull(variable);
+        } else if (value.length == 0 || value[0].length == 0) {
+            putEmptyMatrix(variable, value.length);
         } else {
             final int rows = value.length;
             final int cols = value[0].length;
@@ -104,9 +110,10 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                 if (row > 0) {
                     sb.append(",");
                 }
+                sb.append("[");
                 for (int col = 0; col < cols; col++) {
                     if (col > 0) {
-                        sb.append(" ");
+                        sb.append(",");
                     }
                     final String v = value[row][col];
                     if (v == null) {
@@ -117,6 +124,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                         sb.append("\"");
                     }
                 }
+                sb.append("]");
             }
             sb.append("]");
             putExpression(variable, sb.toString());
@@ -125,7 +133,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
 
     @Override
     public void putBoolean(final String variable, final boolean value) {
-        putExpression(variable, "" + booleanToString(value) + "");
+        putExpression(variable, booleanToString(value));
     }
 
     protected String booleanToString(final boolean value) {
@@ -157,6 +165,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
     public void putBooleanMatrix(final String variable, final boolean[][] value) {
         if (value == null) {
             putNull(variable);
+        } else if (value.length == 0 || value[0].length == 0) {
+            putEmptyMatrix(variable, value.length);
         } else {
             final int rows = value.length;
             final int cols = value[0].length;
@@ -166,16 +176,30 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                 if (row > 0) {
                     sb.append(",");
                 }
+                sb.append("[");
                 for (int col = 0; col < cols; col++) {
                     if (col > 0) {
-                        sb.append(" ");
+                        sb.append(",");
                     }
                     sb.append(booleanToString(value[row][col]));
                 }
+                sb.append("]");
             }
             sb.append("]");
             putExpression(variable, sb.toString());
         }
+    }
+
+    public void putEmptyMatrix(final String variable, final int rows) {
+        final StringBuilder sb = new StringBuilder("[");
+        for (int row = 0; row < rows; row++) {
+            if (row > 0) {
+                sb.append(",");
+            }
+            sb.append("[]");
+        }
+        sb.append("]");
+        putExpression(variable, sb.toString());
     }
 
     @Override
@@ -204,6 +228,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
     public void putByteMatrix(final String variable, final byte[][] value) {
         if (value == null) {
             putNull(variable);
+        } else if (value.length == 0 || value[0].length == 0) {
+            putEmptyMatrix(variable, value.length);
         } else {
             final int rows = value.length;
             final int cols = value[0].length;
@@ -213,12 +239,14 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                 if (row > 0) {
                     sb.append(",");
                 }
+                sb.append("[");
                 for (int col = 0; col < cols; col++) {
                     if (col > 0) {
-                        sb.append(" ");
+                        sb.append(",");
                     }
                     sb.append(value[row][col]);
                 }
+                sb.append("]");
             }
             sb.append("]");
             putExpression(variable, sb.toString());
@@ -251,6 +279,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
     public void putShortMatrix(final String variable, final short[][] value) {
         if (value == null) {
             putNull(variable);
+        } else if (value.length == 0 || value[0].length == 0) {
+            putEmptyMatrix(variable, value.length);
         } else {
             final int rows = value.length;
             final int cols = value[0].length;
@@ -260,12 +290,14 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                 if (row > 0) {
                     sb.append(",");
                 }
+                sb.append("[");
                 for (int col = 0; col < cols; col++) {
                     if (col > 0) {
-                        sb.append(" ");
+                        sb.append(",");
                     }
                     sb.append(value[row][col]);
                 }
+                sb.append("]");
             }
             sb.append("]");
             putExpression(variable, sb.toString());
@@ -298,6 +330,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
     public void putIntegerMatrix(final String variable, final int[][] value) {
         if (value == null) {
             putNull(variable);
+        } else if (value.length == 0 || value[0].length == 0) {
+            putEmptyMatrix(variable, value.length);
         } else {
             final int rows = value.length;
             final int cols = value[0].length;
@@ -307,12 +341,14 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                 if (row > 0) {
                     sb.append(",");
                 }
+                sb.append("[");
                 for (int col = 0; col < cols; col++) {
                     if (col > 0) {
-                        sb.append(" ");
+                        sb.append(",");
                     }
                     sb.append(value[row][col]);
                 }
+                sb.append("]");
             }
             sb.append("]");
             putExpression(variable, sb.toString());
@@ -321,7 +357,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
 
     @Override
     public void putLong(final String variable, final long value) {
-        putExpression(variable, "Int64(" + String.valueOf(value) + ")");
+        putExpression(variable, String.valueOf(value));
     }
 
     @Override
@@ -345,6 +381,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
     public void putLongMatrix(final String variable, final long[][] value) {
         if (value == null) {
             putNull(variable);
+        } else if (value.length == 0 || value[0].length == 0) {
+            putEmptyMatrix(variable, value.length);
         } else {
             final int rows = value.length;
             final int cols = value[0].length;
@@ -354,12 +392,14 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                 if (row > 0) {
                     sb.append(",");
                 }
+                sb.append("[");
                 for (int col = 0; col < cols; col++) {
                     if (col > 0) {
-                        sb.append(" ");
+                        sb.append(",");
                     }
                     sb.append(value[row][col]);
                 }
+                sb.append("]");
             }
             sb.append("]");
             putExpression(variable, sb.toString());
@@ -392,6 +432,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
     public void putFloatMatrix(final String variable, final float[][] value) {
         if (value == null) {
             putNull(variable);
+        } else if (value.length == 0 || value[0].length == 0) {
+            putEmptyMatrix(variable, value.length);
         } else {
             final int rows = value.length;
             final int cols = value[0].length;
@@ -401,12 +443,14 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                 if (row > 0) {
                     sb.append(",");
                 }
+                sb.append("[");
                 for (int col = 0; col < cols; col++) {
                     if (col > 0) {
-                        sb.append(" ");
+                        sb.append(",");
                     }
                     sb.append(value[row][col]);
                 }
+                sb.append("]");
             }
             sb.append("]");
             putExpression(variable, sb.toString());
@@ -439,6 +483,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
     public void putDoubleMatrix(final String variable, final double[][] value) {
         if (value == null) {
             putNull(variable);
+        } else if (value.length == 0 || value[0].length == 0) {
+            putEmptyMatrix(variable, value.length);
         } else {
             final int rows = value.length;
             final int cols = value[0].length;
@@ -448,12 +494,14 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                 if (row > 0) {
                     sb.append(",");
                 }
+                sb.append("[");
                 for (int col = 0; col < cols; col++) {
                     if (col > 0) {
-                        sb.append(" ");
+                        sb.append(",");
                     }
                     sb.append(value[row][col]);
                 }
+                sb.append("]");
             }
             sb.append("]");
             putExpression(variable, sb.toString());

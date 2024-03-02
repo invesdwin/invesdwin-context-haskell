@@ -14,6 +14,7 @@ public class ExtendedFregeBridge extends ModifiedFregeBridge {
     public void reset() throws IOException {
         getErrWatcher().clearLog();
         eval(":reset");
+        eval(ModifiedFregeBridge.IMPORT_DATA_JSON);
         getErrWatcher().clearLog();
     }
 
