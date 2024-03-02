@@ -27,7 +27,9 @@ import de.invesdwin.util.lang.Closeables;
 import de.invesdwin.util.lang.string.Strings;
 import de.invesdwin.util.streams.buffer.bytes.ByteBuffers;
 import de.invesdwin.util.streams.buffer.bytes.IByteBuffer;
+import de.invesdwin.util.time.Instant;
 import de.invesdwin.util.time.date.FTimeUnit;
+import de.invesdwin.util.time.duration.Duration;
 
 /**
  * Fork of: https://github.com/org-arl/jajub/issues/2
@@ -51,6 +53,7 @@ public class ModifiedFregeBridge {
     private final IByteBuffer readLineBuffer = ByteBuffers.allocateExpandable();
     private int readLineBufferPosition = 0;
     private final ObjectMapper mapper;
+    private int ansCounter = 0;
 
     private final List<String> rsp = new ArrayList<>();
 
@@ -112,17 +115,16 @@ public class ModifiedFregeBridge {
         errWatcher = new ModifiedFregeErrorConsoleWatcher(frege);
         errWatcher.startWatching();
         out = frege.getOutputStream();
-        int tries = 0;
+        final Instant start = new Instant();
         while (true) {
             final String s = readline();
             if (s == null) {
-                if (tries < 10) {
+                if (start.isLessThan(Duration.TEN_SECONDS)) {
                     try {
-                        FTimeUnit.SECONDS.sleep(1);
+                        FTimeUnit.MILLISECONDS.sleep(1);
                     } catch (final InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                    tries++;
                     continue;
                 } else {
                     close();
@@ -131,10 +133,12 @@ public class ModifiedFregeBridge {
             }
             if (s.startsWith("Welcome to Frege")) {
                 ver = s;
+                out.write("import Data.JSON".getBytes());
+                out.write(NEW_LINE);
                 out.write(TERMINATOR_SUFFIX_BYTES);
                 out.write(NEW_LINE);
                 out.flush();
-            } else if (s.contains(TERMINATOR_RAW)) {
+            } else if (s.equals(TERMINATOR_RAW)) {
                 break;
             }
         }
@@ -183,6 +187,12 @@ public class ModifiedFregeBridge {
                 if (Strings.equalsAny(s, TERMINATOR_RAW, TERMINATOR)) {
                     return;
                 }
+                if (Strings.startsWith(s, "frege>")) {
+                    continue;
+                }
+                if (Strings.equals(s, "()")) {
+                    continue;
+                }
                 rsp.add(s);
             }
         } catch (final IOException ex) {
@@ -213,12 +223,19 @@ public class ModifiedFregeBridge {
     }
 
     public JsonNode getAsJsonNode(final String variable) {
-        final StringBuilder message = new StringBuilder("__ans__ = JSON.json(");
+        final String ansVariable = "__ans__" + ansCounter + "__";
+        ansCounter++;
+        final StringBuilder message = new StringBuilder();
+        message.append(ansVariable);
+        message.append(" = show ( toJSON ( ");
         message.append(variable);
-        message.append("); putStrLn length __ans__");
+        message.append(" ) )");
+        message.append("\nputStrLn ( show ( length ( ");
+        message.append(ansVariable);
+        message.append(" ) ) )");
         exec(message.toString(), "> get %s", variable);
 
-        final String result = get();
+        final String result = get(ansVariable);
         try {
             final JsonNode node = mapper.readTree(result);
             checkError();
@@ -236,7 +253,7 @@ public class ModifiedFregeBridge {
         }
     }
 
-    private String get() {
+    private String get(final String ansVariable) {
         if (rsp.size() < 1) {
             throw new RuntimeException("Invalid response from Frege REPL");
         }
@@ -247,7 +264,20 @@ public class ModifiedFregeBridge {
                 //Missing or Nothing
                 return null;
             }
-            write("write(stdout, __ans__)");
+            write("putStrLn " + ansVariable);
+            while (true) {
+                final String s = readline();
+                if (s == null) {
+                    //retry, we were a bit too fast as it seems
+                    continue;
+                }
+                if (Strings.equals(s, "()")) {
+                    continue;
+                }
+                if (Strings.startsWith(s, "frege>")) {
+                    break;
+                }
+            }
             final byte[] buf = new byte[n];
             read(buf);
             return new String(buf);
