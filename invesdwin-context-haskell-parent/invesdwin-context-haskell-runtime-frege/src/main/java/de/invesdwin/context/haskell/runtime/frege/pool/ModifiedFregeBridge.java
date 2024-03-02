@@ -351,13 +351,13 @@ public class ModifiedFregeBridge {
     }
 
     protected void checkError() {
-        boolean prevLineIsPrompt = false;
         for (int i = 0; i < rsp.size(); i++) {
             final String line = rsp.get(i);
-            if (prevLineIsPrompt && line.startsWith("E ")) {
+            if (line.startsWith("E ")) {
                 throw new IllegalStateException(Strings.join(rsp, "\n"));
+            } else if (line.startsWith(LENGTH_PREFIX)) {
+                break;
             }
-            prevLineIsPrompt = line.startsWith(PROMPT);
         }
 
         final String error = getErrWatcher().getErrorMessage();
