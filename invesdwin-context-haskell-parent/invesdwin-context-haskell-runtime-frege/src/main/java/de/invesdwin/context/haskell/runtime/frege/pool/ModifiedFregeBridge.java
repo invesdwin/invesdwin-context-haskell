@@ -379,6 +379,12 @@ public class ModifiedFregeBridge {
     }
 
     protected void checkError() {
+        for (int i = 0; i < rsp.size(); i++) {
+            if (rsp.get(i).startsWith("E ")) {
+                throw new IllegalStateException(Strings.join(rsp, "\n"));
+            }
+        }
+
         final String error = getErrWatcher().getErrorMessage();
         if (error != null) {
             throw new IllegalStateException(error);

@@ -1,54 +1,19 @@
-println("getBoolean")
-if isdefined(Main, :getBoolean) && !isnothing(getBoolean)
-	error("getBoolean already defined!")
-end
+putStrLn ( show ( "getBoolean" ) )
 getBoolean = putBoolean
-println(typeof(getBoolean))
-println(getBoolean)
-if typeof(getBoolean) != Bool
-	error("getBoolean not Bool!")
-end
+putStrLn ( show ( getBoolean ) )
 
-println("getBooleanVector")
-if isdefined(Main, :getBooleanVector) && !isnothing(getBooleanVector)
-	error("getBooleanVector already defined!")
-end
+putStrLn ( show ( "getBooleanVector" ) )
 getBooleanVector = putBooleanVector
-println(eltype(getBooleanVector))
-println(getBooleanVector)
-if eltype(getBooleanVector) != Bool 
-	error("getBooleanVector not Bool!")
-end
+putStrLn ( show ( getBooleanVector ) )
 
-println("getBooleanVectorAsList")
-if isdefined(Main, :getBooleanVectorAsList) && !isnothing(getBooleanVectorAsList)
-	error("getBooleanVectorAsList already defined!")
-end
+putStrLn ( show ( "getBooleanVectorAsList" ) )
 getBooleanVectorAsList = putBooleanVectorAsList
-println(eltype(getBooleanVectorAsList))
-println(getBooleanVectorAsList)
-if eltype(getBooleanVectorAsList) != Bool
-	error("getBooleanVectorAsList not Bool!")
-end
+putStrLn ( show ( getBooleanVectorAsList ) )
 
-println("getBooleanMatrix")
-if isdefined(Main, :getBooleanMatrix) && !isnothing(getBooleanMatrix)
-	error("getBooleanMatrix already defined!")
-end
+putStrLn ( show ( "getBooleanMatrix" ) )
 getBooleanMatrix = putBooleanMatrix
-println(eltype(getBooleanMatrix))
-println(getBooleanMatrix)
-if eltype(getBooleanMatrix) != Bool
-	error("getBooleanMatrix not Bool!")
-end
+putStrLn ( show ( getBooleanMatrix ) )
 
-println("getBooleanMatrixAsList")
-if isdefined(Main, :getBooleanMatrixAsList) && !isnothing(getBooleanMatrixAsList)
-	error("getBooleanMatrixAsList already defined!")
-end
+putStrLn ( show ( "getBooleanMatrixAsList" ) )
 getBooleanMatrixAsList = putBooleanMatrixAsList
-println(eltype(getBooleanMatrixAsList))
-println(getBooleanMatrixAsList)
-if eltype(getBooleanMatrixAsList) != Bool
-	error("getBooleanMatrixAsList not Bool!")
-end
+putStrLn ( show ( getBooleanMatrixAsList ) )

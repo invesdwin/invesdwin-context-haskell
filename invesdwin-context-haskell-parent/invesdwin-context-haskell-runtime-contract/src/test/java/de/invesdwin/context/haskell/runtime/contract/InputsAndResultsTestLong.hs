@@ -1,54 +1,19 @@
-println("getLong")
-if isdefined(Main, :getLong) && !isnothing(getLong)
-	error("getLong already defined!")
-end
+putStrLn ( show ( "getLong" ) )
 getLong = putLong
-println(typeof(getLong))
-println(getLong)
-if typeof(getLong) != Int64
-	error("getLong not Int64!")
-end
+putStrLn ( show ( getLong ) )
 
-println("getLongVector")
-if isdefined(Main, :getLongVector) && !isnothing(getLongVector)
-	error("getLongVector already defined!")
-end
+putStrLn ( show ( "getLongVector" ) )
 getLongVector = putLongVector
-println(eltype(getLongVector))
-println(getLongVector)
-if eltype(getLongVector) != Int64
-	error("getLongVector not Int64!")
-end
+putStrLn ( show ( getLongVector ) )
 
-println("getLongVectorAsList")
-if isdefined(Main, :getLongVectorAsList) && !isnothing(getLongVectorAsList)
-	error("getLongVectorAsList already defined!")
-end
+putStrLn ( show ( "getLongVectorAsList" ) )
 getLongVectorAsList = putLongVectorAsList
-println(eltype(getLongVectorAsList))
-println(getLongVectorAsList)
-if eltype(getLongVectorAsList) != Int64
-	error("getLongVectorAsList not Int64!")
-end
+putStrLn ( show ( getLongVectorAsList ) )
 
-println("getLongMatrix")
-if isdefined(Main, :getLongMatrix) && !isnothing(getLongMatrix)
-	error("getLongMatrix already defined!")
-end
+putStrLn ( show ( "getLongMatrix" ) )
 getLongMatrix = putLongMatrix
-println(eltype(getLongMatrix))
-println(getLongMatrix)
-if eltype(getLongMatrix) != Int64
-	error("getLongMatrix not Int64!")
-end
+putStrLn ( show ( getLongMatrix ) )
 
-println("getLongMatrixAsList")
-if isdefined(Main, :getLongMatrixAsList) && !isnothing(getLongMatrixAsList)
-	error("getLongMatrixAsList already defined!")
-end
+putStrLn ( show ( "getLongMatrixAsList" ) )
 getLongMatrixAsList = putLongMatrixAsList
-println(eltype(getLongMatrixAsList))
-println(getLongMatrixAsList)
-if eltype(getLongMatrixAsList) != Int64
-	error("getLongMatrixAsList not Int64!")
-end
+putStrLn ( show ( getLongMatrixAsList ) )

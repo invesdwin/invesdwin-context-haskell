@@ -11,7 +11,7 @@ public interface IScriptTaskInputsHaskell extends IScriptTaskInputs {
 
     @Override
     default void putNull(final String variable) {
-        putExpression(variable, "nothing");
+        putExpression(variable, "Nothing");
     }
 
     @Override

@@ -1,54 +1,19 @@
-println("getDouble")
-if isdefined(Main, :getDouble) && !isnothing(getDouble)
-	error("getDouble already defined!")
-end
+putStrLn ( show ( "getDouble" ) )
 getDouble = putDouble
-println(typeof(getDouble))
-println(getDouble)
-if typeof(getDouble) != Float64
-	error("getDouble not Float64!")
-end
+putStrLn ( show ( getDouble ) )
 
-println("getDoubleVector")
-if isdefined(Main, :getDoubleVector) && !isnothing(getDoubleVector)
-	error("getDoubleVector already defined!")
-end
+putStrLn ( show ( "getDoubleVector" ) )
 getDoubleVector = putDoubleVector
-println(eltype(getDoubleVector))
-println(getDoubleVector)
-if eltype(getDoubleVector) != Float64
-	error("getDoubleVector not Float64!")
-end
+putStrLn ( show ( getDoubleVector ) )
 
-println("getDoubleVectorAsList")
-if isdefined(Main, :getDoubleVectorAsList) && !isnothing(getDoubleVectorAsList)
-	error("getDoubleVectorAsList already defined!")
-end
+putStrLn ( show ( "getDoubleVectorAsList" ) )
 getDoubleVectorAsList = putDoubleVectorAsList
-println(eltype(getDoubleVectorAsList))
-println(getDoubleVectorAsList)
-if eltype(getDoubleVectorAsList) != Float64
-	error("getDoubleVectorAsList not Float64!")
-end
+putStrLn ( show ( getDoubleVectorAsList ) )
 
-println("getDoubleMatrix")
-if isdefined(Main, :getDoubleMatrix) && !isnothing(getDoubleMatrix)
-	error("getDoubleMatrix already defined!")
-end
+putStrLn ( show ( "getDoubleMatrix" ) )
 getDoubleMatrix = putDoubleMatrix
-println(eltype(getDoubleMatrix))
-println(getDoubleMatrix)
-if eltype(getDoubleMatrix) != Float64
-	error("getDoubleMatrix not Float64!")
-end
+putStrLn ( show ( getDoubleMatrix ) )
 
-println("getDoubleMatrixAsList")
-if isdefined(Main, :getDoubleMatrixAsList) && !isnothing(getDoubleMatrixAsList)
-	error("getDoubleMatrixAsList already defined!")
-end
+putStrLn ( show ( "getDoubleMatrixAsList" ) )
 getDoubleMatrixAsList = putDoubleMatrixAsList
-println(eltype(getDoubleMatrixAsList))
-println(getDoubleMatrixAsList)
-if eltype(getDoubleMatrixAsList) != Float64
-	error("getDoubleMatrixAsList not Float64!")
-end
+putStrLn ( show ( getDoubleMatrixAsList ) )
