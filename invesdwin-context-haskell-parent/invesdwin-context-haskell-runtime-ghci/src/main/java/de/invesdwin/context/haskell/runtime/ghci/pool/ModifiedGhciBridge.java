@@ -8,14 +8,16 @@ import java.util.List;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
+import org.apache.commons.lang3.mutable.MutableInt;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 
 import de.invesdwin.context.haskell.runtime.contract.IScriptTaskRunnerHaskell;
 import de.invesdwin.context.haskell.runtime.ghci.GhciProperties;
 import de.invesdwin.context.integration.marshaller.MarshallerJsonJackson;
+import de.invesdwin.util.assertions.Assertions;
 import de.invesdwin.util.concurrent.loop.ASpinWait;
 import de.invesdwin.util.concurrent.loop.LoopInterruptedCheck;
 import de.invesdwin.util.error.Throwables;
@@ -33,13 +35,9 @@ import de.invesdwin.util.time.duration.Duration;
 @NotThreadSafe
 public class ModifiedGhciBridge {
 
-    public static final String VALUE_START = "__##@VALUE@##__[";
-    public static final String VALUE_END = "]__##@VALUE@##__";
-    public static final String LENGTH_PREFIX = "__##@LENGTH@##__=";
-    public static final String STARTUP_SCRIPT = "import Data.Aeson\n__get__ variable = do putStrLn ( \"" + LENGTH_PREFIX
-            + "\" ++ show ( length ( __ans__ ) ) ) ; putStrLn \"" + VALUE_START + "\" ; putStrLn __ans__ ; putStrLn \""
-            + VALUE_END + "\" where __ans__ = show ( encode ( variable ) )";
+    public static final String STARTUP_SCRIPT = "import Data.Aeson";
     private static final String PROMPT = "ghci> ";
+    private static final byte[] PROMPT_BYTES = PROMPT.getBytes();
     private static final char NEW_LINE = '\n';
     private static final String TERMINATOR_RAW = "__##@@##__";
     private static final String TERMINATOR = "\"" + TERMINATOR_RAW + "\"";
@@ -56,6 +54,7 @@ public class ModifiedGhciBridge {
     private final IByteBuffer readLineBuffer = ByteBuffers.allocateExpandable();
     private int readLineBufferPosition = 0;
     private final ObjectMapper mapper;
+    private final byte[] promptBuf = new byte[PROMPT.length()];
 
     private final List<String> rsp = new ArrayList<>();
 
@@ -184,11 +183,9 @@ public class ModifiedGhciBridge {
     }
 
     public JsonNode getAsJsonNode(final String variable) {
-        final StringBuilder message = new StringBuilder();
-        message.append("__get__ ( ");
+        final StringBuilder message = new StringBuilder("__ans__ = show ( encode ( ");
         message.append(variable);
-        message.append(" )");
-
+        message.append(" ) )\nputStrLn ( show ( length ( __ans__ ) ) )");
         exec(message.toString(), "> get %s", variable);
 
         final String result = get();
@@ -197,13 +194,6 @@ public class ModifiedGhciBridge {
             checkError();
             if (result == null) {
                 checkErrorDelayed();
-            }
-            if (node instanceof TextNode) {
-                //Ghci does not support Nothing/null, we emulate it with an empty string
-                final TextNode cNode = (TextNode) node;
-                if (Strings.isBlankOrNullText(cNode.asText())) {
-                    return null;
-                }
             }
             if (node instanceof NullNode) {
                 return null;
@@ -220,35 +210,24 @@ public class ModifiedGhciBridge {
         if (rsp.size() < 1) {
             throw new RuntimeException("Invalid response from Ghci REPL");
         }
-        //WORKAROUND: always extract the last output as the type because the executed code might have printed another line
-        final int n = getRspLength();
-        if (n == 0) {
-            //Missing or Nothing
-            return null;
-        }
-        final StringBuilder sb = new StringBuilder();
-        boolean append = false;
-        for (int i = 0; i < rsp.size(); i++) {
-            final String line = rsp.get(i);
-            if (line.equals(VALUE_START)) {
-                append = true;
-                continue;
+        try {
+            //WORKAROUND: always extract the last output as the type because the executed code might have printed another line
+            final int n = Integer.parseInt(rsp.get(rsp.size() - 1));
+            if (n == 0) {
+                //Missing or Nothing
+                return null;
             }
-            if (line.equals(VALUE_END)) {
-                break;
-            }
-            if (append) {
-                if (sb.length() > 0) {
-                    sb.append("\n");
-                }
-                sb.append(line);
-            }
+            write("putStrLn __ans__");
+
+            read(promptBuf);
+            Assertions.checkTrue(ByteBuffers.equals(PROMPT_BYTES, promptBuf));
+
+            final byte[] buf = new byte[n];
+            read(buf);
+            return unescape(new String(buf));
+        } catch (final IOException ex) {
+            throw new RuntimeException("GhciBridge connection broken", ex);
         }
-        if (sb.length() != n) {
-            throw new IllegalStateException(
-                    "resultLength[" + sb.length() + "] != expectedLength[" + n + "]: " + sb.toString());
-        }
-        return unescape(sb.toString());
     }
 
     private String unescape(final String str) {
@@ -256,16 +235,6 @@ public class ModifiedGhciBridge {
         unescaped = Strings.removeStart(unescaped, "\"");
         unescaped = Strings.removeEnd(unescaped, "\"");
         return Strings.unescapeJava(unescaped);
-    }
-
-    private int getRspLength() {
-        for (int i = rsp.size() - 1; i >= 0; i--) {
-            final String line = rsp.get(i);
-            if (line.startsWith(LENGTH_PREFIX)) {
-                return Integer.parseInt(Strings.removeStart(line, LENGTH_PREFIX.length()));
-            }
-        }
-        throw new IllegalStateException(Strings.join(rsp, "\n"));
     }
 
     /**
@@ -282,10 +251,47 @@ public class ModifiedGhciBridge {
 
     ////// private stuff
 
+    private void write(final String s) throws IOException {
+        IScriptTaskRunnerHaskell.LOG.trace("> " + s);
+        out.write(s.getBytes());
+        out.write(NEW_LINE);
+        out.flush();
+    }
+
     private void flush() throws IOException {
         while (inp.available() > 0) {
             inp.read();
         }
+    }
+
+    private int read(final byte[] buf) throws IOException {
+        final MutableInt ofs = new MutableInt(0);
+        //WORKAROUND: sleeping 10 ms between messages is way too slow
+        final ASpinWait spinWait = new ASpinWait() {
+            @Override
+            public boolean isConditionFulfilled() throws Exception {
+                if (interruptedCheck.check()) {
+                    checkError();
+                }
+                int n = inp.available();
+                while (n > 0 && !Thread.interrupted()) {
+                    final int m = buf.length - ofs.intValue();
+                    ofs.add(inp.read(buf, ofs.intValue(), n > m ? m : n));
+                    if (ofs.intValue() == buf.length) {
+                        return true;
+                    }
+                    n = inp.available();
+                }
+                return false;
+            }
+        };
+        try {
+            spinWait.awaitFulfill(System.nanoTime());
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+        IScriptTaskRunnerHaskell.LOG.trace("< (" + ofs + " bytes)");
+        return ofs.intValue();
     }
 
     private String readline() throws IOException {
@@ -328,8 +334,6 @@ public class ModifiedGhciBridge {
             final String line = rsp.get(i);
             if (line.startsWith("<interactive>:")) {
                 throw new IllegalStateException(Strings.join(rsp, "\n"));
-            } else if (line.startsWith(LENGTH_PREFIX)) {
-                break;
             }
         }
 
