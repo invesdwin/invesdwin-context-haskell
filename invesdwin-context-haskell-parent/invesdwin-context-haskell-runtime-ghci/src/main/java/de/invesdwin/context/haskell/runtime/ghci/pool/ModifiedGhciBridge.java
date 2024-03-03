@@ -13,6 +13,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 import de.invesdwin.context.haskell.runtime.contract.IScriptTaskRunnerHaskell;
 import de.invesdwin.context.haskell.runtime.ghci.GhciProperties;
@@ -168,7 +169,7 @@ public class ModifiedGhciBridge {
                     //retry, we were a bit too fast as it seems
                     continue;
                 }
-                if (Strings.equalsAny(s, TERMINATOR_RAW, TERMINATOR)) {
+                if (Strings.containsAny(s, TERMINATOR_RAW, TERMINATOR)) {
                     return;
                 }
                 if (Strings.startsWith(s, PROMPT)) {
@@ -194,6 +195,13 @@ public class ModifiedGhciBridge {
             if (result == null) {
                 checkErrorDelayed();
             }
+            if (node instanceof TextNode) {
+                //Frege does not support Nothing/null, we emulate it with an empty string
+                final TextNode cNode = (TextNode) node;
+                if (Strings.isBlankOrNullText(cNode.asText())) {
+                    return null;
+                }
+            }
             if (node instanceof NullNode) {
                 return null;
             } else {
@@ -211,7 +219,12 @@ public class ModifiedGhciBridge {
         }
         try {
             //WORKAROUND: always extract the last output as the type because the executed code might have printed another line
-            final int n = Integer.parseInt(rsp.get(rsp.size() - 1));
+            String lengthStr = rsp.get(rsp.size() - 1);
+            if (lengthStr.contains(" ")) {
+                //sometimes parts of the prompt are included in a line (ghci is inconsistent in its printing of newlines sometimes)
+                lengthStr = Strings.substringAfterLast(lengthStr, " ");
+            }
+            final int n = Integer.parseInt(lengthStr);
             if (n == 0) {
                 //Missing or Nothing
                 return null;
@@ -219,7 +232,7 @@ public class ModifiedGhciBridge {
             write("putStrLn __ans__");
 
             read(promptBuf);
-            if ((ByteBuffers.equals(PROMPT_BYTES, promptBuf))) {
+            if (!ByteBuffers.equals(PROMPT_BYTES, promptBuf)) {
                 throw new IllegalStateException(
                         "Expected default prompt \"" + PROMPT + "\" but got \"" + new String(promptBuf) + "\"");
             }
@@ -325,20 +338,13 @@ public class ModifiedGhciBridge {
         }
         final String s = readLineBuffer.getStringUtf8(0, readLineBufferPosition);
         final String replaced = Strings.replace(s, PROMPT, "");
-        if (!Strings.equalsAny(replaced, TERMINATOR_RAW, TERMINATOR)) {
+        if (!Strings.containsAny(replaced, TERMINATOR_RAW, TERMINATOR)) {
             IScriptTaskRunnerHaskell.LOG.debug("< %s", replaced);
         }
         return replaced;
     }
 
     protected void checkError() {
-        for (int i = 0; i < rsp.size(); i++) {
-            final String line = rsp.get(i);
-            if (line.startsWith("<interactive>:")) {
-                throw new IllegalStateException(Strings.join(rsp, "\n"));
-            }
-        }
-
         final String error = getErrWatcher().getErrorMessage();
         if (error != null) {
             throw new IllegalStateException(error);

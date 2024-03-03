@@ -9,9 +9,13 @@ public interface IScriptTaskInputsHaskell extends IScriptTaskInputs {
         getEngine().eval(variable + " = " + expression);
     }
 
+    /**
+     * frege/ghci does not really support Nothing/null, causes exceptions when "show" or "encode" is called on it, so we
+     * use empty string as a workaround
+     */
     @Override
     default void putNull(final String variable) {
-        putExpression(variable, "Nothing");
+        putExpression(variable, "\"\"");
     }
 
     @Override

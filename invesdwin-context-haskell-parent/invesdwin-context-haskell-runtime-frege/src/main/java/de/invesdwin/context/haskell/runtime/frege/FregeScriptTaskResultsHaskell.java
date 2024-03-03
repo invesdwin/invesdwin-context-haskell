@@ -25,24 +25,4 @@ public class FregeScriptTaskResultsHaskell extends AScriptTaskResultsHaskellFrom
         return engine.unwrap().getAsJsonNode(variable);
     }
 
-    @Override
-    public boolean isDefined(final String variable) {
-        return !isNull(variable);
-    }
-
-    @Override
-    public boolean isDefinedNotNull(final String variable) {
-        return !isNull(variable);
-    }
-
-    @Override
-    public boolean isNotDefinedOrNull(final String variable) {
-        return isNull(variable);
-    }
-
-    @Override
-    public boolean isNull(final String variable) {
-        return getBoolean(variable + " == \"\"");
-    }
-
 }

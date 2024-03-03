@@ -19,7 +19,7 @@ public interface IScriptTaskResultsHaskell extends IScriptTaskResults {
 
     @Override
     default boolean isNull(final String variable) {
-        return getBoolean("show ( typeOf ( " + variable + " ) ) == \"Nothing\" ");
+        return getBoolean(variable + " == \"\"");
     }
 
     default boolean isEmpty(final String variable) {

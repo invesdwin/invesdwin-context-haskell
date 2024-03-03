@@ -32,10 +32,10 @@ public class InputsAndResultsTests {
         new InputsAndResultsTestCharacter(runner).testCharacter();
         new InputsAndResultsTestString(runner).testString();
         new InputsAndResultsTestBoolean(runner).testBoolean();
-        //        new InputsAndResultsTestNull(runner).testNull();
-        //        new InputsAndResultsTestNullPutGet(runner).testNullPutGet();
-        //        new InputsAndResultsTestEmpty(runner).testEmpty();
-        //        new InputsAndResultsTestEmptyMatrixValue(runner).testEmptyMatrixValue();
+        new InputsAndResultsTestNull(runner).testNull();
+        new InputsAndResultsTestNullPutGet(runner).testNullPutGet();
+        new InputsAndResultsTestEmpty(runner).testEmpty();
+        new InputsAndResultsTestEmptyMatrixValue(runner).testEmptyMatrixValue();
     }
 
     public void testParallel() {

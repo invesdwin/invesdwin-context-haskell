@@ -144,45 +144,74 @@ public class InputsAndResultsTestEmptyMatrixValue {
 
             @Override
             public Void extractResults(final IScriptTaskResults results) {
-                Assertions.checkEquals(putBooleanMatrix, results.getBooleanMatrix("getBooleanMatrix"));
-                Assertions.checkEquals(putBooleanMatrixAsList,
-                        results.getBooleanMatrixAsList("getBooleanMatrixAsList"));
-
-                Assertions.checkEquals(putByteMatrix, results.getByteMatrix("getByteMatrix"));
-                Assertions.checkEquals(putByteMatrixAsList, results.getByteMatrixAsList("getByteMatrixAsList"));
-
-                Assertions.checkEquals(putCharacterMatrix, results.getCharacterMatrix("getCharacterMatrix"));
-                Assertions.checkEquals(putCharacterMatrixAsList,
-                        results.getCharacterMatrixAsList("getCharacterMatrixAsList"));
-
-                Assertions.checkEquals(putDecimalMatrix, results.getDecimalMatrix("getDecimalMatrix"));
-                Assertions.checkEquals(putDecimalMatrixAsList,
-                        results.getDecimalMatrixAsList("getDecimalMatrixAsList"));
-
-                Assertions.checkEquals(putDoubleMatrix, results.getDoubleMatrix("getDoubleMatrix"));
-                Assertions.checkEquals(putDoubleMatrixAsList, results.getDoubleMatrixAsList("getDoubleMatrixAsList"));
-
-                Assertions.checkEquals(putFloatMatrix, results.getFloatMatrix("getFloatMatrix"));
-                Assertions.checkEquals(putFloatMatrixAsList, results.getFloatMatrixAsList("getFloatMatrixAsList"));
-
-                Assertions.checkEquals(putIntegerMatrix, results.getIntegerMatrix("getIntegerMatrix"));
-                Assertions.checkEquals(putIntegerMatrixAsList,
-                        results.getIntegerMatrixAsList("getIntegerMatrixAsList"));
-
-                Assertions.checkEquals(putLongMatrix, results.getLongMatrix("getLongMatrix"));
-                Assertions.checkEquals(putLongMatrixAsList, results.getLongMatrixAsList("getLongMatrixAsList"));
-
-                Assertions.checkEquals(putPercentMatrix,
-                        results.getDecimalMatrix("getPercentMatrix", Percent.ZERO_PERCENT));
-                Assertions.checkEquals(putPercentMatrixAsList,
-                        results.getDecimalMatrixAsList("getPercentMatrixAsList", Percent.ZERO_PERCENT));
-
-                Assertions.checkEquals(putShortMatrix, results.getShortMatrix("getShortMatrix"));
-                Assertions.checkEquals(putShortMatrixAsList, results.getShortMatrixAsList("getShortMatrixAsList"));
-
-                Assertions.checkEquals(putStringMatrix, results.getStringMatrix("getStringMatrix"));
-                Assertions.checkEquals(putStringMatrixAsList, results.getStringMatrixAsList("getStringMatrixAsList"));
+                final IScriptTaskResultsHaskell cResults = (IScriptTaskResultsHaskell) results;
+                //                Assertions.checkEquals(putBooleanMatrix, results.getBooleanMatrix("getBooleanMatrix"));
+                assertEmptyMatrixValue(cResults, "getBooleanMatrix");
+                //                Assertions.checkEquals(putBooleanMatrixAsList,
+                //                        results.getBooleanMatrixAsList("getBooleanMatrixAsList"));
+                assertEmptyMatrixValue(cResults, "getBooleanMatrixAsList");
+                //
+                //                Assertions.checkEquals(putByteMatrix, results.getByteMatrix("getByteMatrix"));
+                assertEmptyMatrixValue(cResults, "getByteMatrix");
+                //                Assertions.checkEquals(putByteMatrixAsList, results.getByteMatrixAsList("getByteMatrixAsList"));
+                assertEmptyMatrixValue(cResults, "getByteMatrixAsList");
+                //
+                //                Assertions.checkEquals(putCharacterMatrix, results.getCharacterMatrix("getCharacterMatrix"));
+                assertEmptyMatrixValue(cResults, "getCharacterMatrix");
+                //                Assertions.checkEquals(putCharacterMatrixAsList,
+                //                        results.getCharacterMatrixAsList("getCharacterMatrixAsList"));
+                assertEmptyMatrixValue(cResults, "getCharacterMatrixAsList");
+                //
+                //                Assertions.checkEquals(putDecimalMatrix, results.getDecimalMatrix("getDecimalMatrix"));
+                assertEmptyMatrixValue(cResults, "getDecimalMatrix");
+                //                Assertions.checkEquals(putDecimalMatrixAsList,
+                //                        results.getDecimalMatrixAsList("getDecimalMatrixAsList"));
+                assertEmptyMatrixValue(cResults, "getDecimalMatrixAsList");
+                //
+                //                Assertions.checkEquals(putDoubleMatrix, results.getDoubleMatrix("getDoubleMatrix"));
+                assertEmptyMatrixValue(cResults, "getDoubleMatrix");
+                //                Assertions.checkEquals(putDoubleMatrixAsList, results.getDoubleMatrixAsList("getDoubleMatrixAsList"));
+                assertEmptyMatrixValue(cResults, "getDoubleMatrixAsList");
+                //
+                //                Assertions.checkEquals(putFloatMatrix, results.getFloatMatrix("getFloatMatrix"));
+                assertEmptyMatrixValue(cResults, "getFloatMatrix");
+                //                Assertions.checkEquals(putFloatMatrixAsList, results.getFloatMatrixAsList("getFloatMatrixAsList"));
+                assertEmptyMatrixValue(cResults, "getFloatMatrixAsList");
+                //
+                //                Assertions.checkEquals(putIntegerMatrix, results.getIntegerMatrix("getIntegerMatrix"));
+                assertEmptyMatrixValue(cResults, "getIntegerMatrix");
+                //                Assertions.checkEquals(putIntegerMatrixAsList,
+                //                        results.getIntegerMatrixAsList("getIntegerMatrixAsList"));
+                assertEmptyMatrixValue(cResults, "getIntegerMatrixAsList");
+                //
+                //                Assertions.checkEquals(putLongMatrix, results.getLongMatrix("getLongMatrix"));
+                assertEmptyMatrixValue(cResults, "getLongMatrix");
+                //                Assertions.checkEquals(putLongMatrixAsList, results.getLongMatrixAsList("getLongMatrixAsList"));
+                assertEmptyMatrixValue(cResults, "getLongMatrixAsList");
+                //
+                //                Assertions.checkEquals(putPercentMatrix,
+                //                        results.getDecimalMatrix("getPercentMatrix", Percent.ZERO_PERCENT));
+                assertEmptyMatrixValue(cResults, "getPercentMatrix");
+                //                Assertions.checkEquals(putPercentMatrixAsList,
+                //                        results.getDecimalMatrixAsList("getPercentMatrixAsList", Percent.ZERO_PERCENT));
+                assertEmptyMatrixValue(cResults, "getPercentMatrixAsList");
+                //
+                //                Assertions.checkEquals(putShortMatrix, results.getShortMatrix("getShortMatrix"));
+                assertEmptyMatrixValue(cResults, "getShortMatrix");
+                //                Assertions.checkEquals(putShortMatrixAsList, results.getShortMatrixAsList("getShortMatrixAsList"));
+                assertEmptyMatrixValue(cResults, "getShortMatrixAsList");
+                //
+                //                Assertions.checkEquals(putStringMatrix, results.getStringMatrix("getStringMatrix"));
+                assertEmptyMatrixValue(cResults, "getStringMatrix");
+                //                Assertions.checkEquals(putStringMatrixAsList, results.getStringMatrixAsList("getStringMatrixAsList"));
+                assertEmptyMatrixValue(cResults, "getStringMatrixAsList");
                 return null;
+            }
+
+            private void assertEmptyMatrixValue(final IScriptTaskResultsHaskell cResults, final String variable) {
+                Assertions.checkEquals(2, cResults.length(variable));
+                Assertions.checkTrue(cResults.isEmpty(variable + "!!0"));
+                Assertions.checkTrue(cResults.isEmpty(variable + "!!1"));
             }
         }.run(runner);
     }
