@@ -24,7 +24,6 @@
 	<modules>
 		<module>invesdwin-context-haskell-runtime-contract</module>
 		<module>invesdwin-context-haskell-runtime-ghci</module>
-		<module>invesdwin-context-haskell-runtime-etlas</module>
 		<module>invesdwin-context-haskell-runtime-frege</module>
 	</modules>
 
@@ -66,11 +65,6 @@
 			<dependency>
 				<groupId>de.invesdwin</groupId>
 				<artifactId>invesdwin-context-haskell-runtime-ghci</artifactId>
-				<version>${project.version.invesdwin-context-haskell}</version>
-			</dependency>
-			<dependency>
-				<groupId>de.invesdwin</groupId>
-				<artifactId>invesdwin-context-haskell-runtime-etlas</artifactId>
 				<version>${project.version.invesdwin-context-haskell}</version>
 			</dependency>
 			<dependency>
