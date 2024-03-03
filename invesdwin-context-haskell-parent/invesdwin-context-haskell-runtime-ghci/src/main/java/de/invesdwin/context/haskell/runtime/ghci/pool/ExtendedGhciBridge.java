@@ -14,6 +14,7 @@ public class ExtendedGhciBridge extends ModifiedGhciBridge {
     public void reset() throws IOException {
         getErrWatcher().clearLog();
         eval(":load");
+        eval(ModifiedGhciBridge.STARTUP_SCRIPT);
         getErrWatcher().clearLog();
     }
 

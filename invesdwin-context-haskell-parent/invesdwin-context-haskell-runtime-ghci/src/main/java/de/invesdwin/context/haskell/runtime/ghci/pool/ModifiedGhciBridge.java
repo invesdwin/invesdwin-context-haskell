@@ -8,16 +8,14 @@ import java.util.List;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
-import org.apache.commons.lang3.mutable.MutableInt;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 import de.invesdwin.context.haskell.runtime.contract.IScriptTaskRunnerHaskell;
 import de.invesdwin.context.haskell.runtime.ghci.GhciProperties;
 import de.invesdwin.context.integration.marshaller.MarshallerJsonJackson;
-import de.invesdwin.util.collections.Arrays;
 import de.invesdwin.util.concurrent.loop.ASpinWait;
 import de.invesdwin.util.concurrent.loop.LoopInterruptedCheck;
 import de.invesdwin.util.error.Throwables;
@@ -25,7 +23,9 @@ import de.invesdwin.util.lang.Closeables;
 import de.invesdwin.util.lang.string.Strings;
 import de.invesdwin.util.streams.buffer.bytes.ByteBuffers;
 import de.invesdwin.util.streams.buffer.bytes.IByteBuffer;
+import de.invesdwin.util.time.Instant;
 import de.invesdwin.util.time.date.FTimeUnit;
+import de.invesdwin.util.time.duration.Duration;
 
 /**
  * Fork of: https://github.com/org-arl/jajub/issues/2
@@ -33,21 +33,21 @@ import de.invesdwin.util.time.date.FTimeUnit;
 @NotThreadSafe
 public class ModifiedGhciBridge {
 
+    public static final String VALUE_START = "__##@VALUE@##__[";
+    public static final String VALUE_END = "]__##@VALUE@##__";
+    public static final String LENGTH_PREFIX = "__##@LENGTH@##__=";
+    public static final String STARTUP_SCRIPT = "import Data.Aeson\n__get__ variable = do putStrLn ( \"" + LENGTH_PREFIX
+            + "\" ++ show ( length ( __ans__ ) ) ) ; putStrLn \"" + VALUE_START + "\" ; putStrLn __ans__ ; putStrLn \""
+            + VALUE_END + "\" where __ans__ = show ( encode ( variable ) )";
+    private static final String PROMPT = "ghci> ";
     private static final char NEW_LINE = '\n';
     private static final String TERMINATOR_RAW = "__##@@##__";
     private static final String TERMINATOR = "\"" + TERMINATOR_RAW + "\"";
-    private static final String TERMINATOR_SUFFIX = ";\nprintln(" + TERMINATOR + ")";
+    private static final String TERMINATOR_SUFFIX = "\nputStrLn " + TERMINATOR;
     private static final byte[] TERMINATOR_SUFFIX_BYTES = TERMINATOR_SUFFIX.getBytes();
 
-    private static final String[] JULIA_ARGS = { "-iq", "--depwarn=no", "--startup-file=no", "--compiled-modules=yes",
-            "--banner=no", "-e", "using InteractiveUtils;" //
-                    + "__type__(::AbstractArray{T,N}) where T where N = Array{T,N};" //
-                    + "__type__(a) = typeof(a);" //
-                    + "using Pkg; isinstalled(pkg::String) = any(x -> x.name == pkg && x.is_direct_dep, values(Pkg.dependencies())); if !isinstalled(\"JSON\"); redirect_stderr(stdout) do; Pkg.add(\"JSON\"); end; end; using JSON;" //
-                    + "println(" + TERMINATOR + ");" };
-
     private final ProcessBuilder jbuilder;
-    private Process julia = null;
+    private Process ghci = null;
     private InputStream inp = null;
     private ModifiedGhciErrorConsoleWatcher errWatcher = null;
     private OutputStream out = null;
@@ -62,13 +62,10 @@ public class ModifiedGhciBridge {
     ////// public API
 
     /**
-     * Creates a Java-Julia bridge with default settings.
+     * Creates a Java-Ghci bridge with default settings.
      */
     public ModifiedGhciBridge() {
-        final List<String> j = new ArrayList<String>();
-        j.add(GhciProperties.GHCI_COMMAND);
-        j.addAll(Arrays.asList(JULIA_ARGS));
-        jbuilder = new ProcessBuilder(j);
+        jbuilder = new ProcessBuilder(Strings.splitPreserveAllTokens(GhciProperties.GHCI_COMMAND, " "));
         this.mapper = MarshallerJsonJackson.getInstance().getJsonMapper(false);
     }
 
@@ -80,10 +77,10 @@ public class ModifiedGhciBridge {
     }
 
     /**
-     * Checks if Julia process is already running.
+     * Checks if Ghci process is already running.
      */
     public boolean isOpen() {
-        return julia != null;
+        return ghci != null;
     }
 
     public ModifiedGhciErrorConsoleWatcher getErrWatcher() {
@@ -91,7 +88,7 @@ public class ModifiedGhciBridge {
     }
 
     /**
-     * Starts the Julia process.
+     * Starts the Ghci process.
      *
      * @param timeout
      *            timeout in milliseconds for process to start.
@@ -100,34 +97,48 @@ public class ModifiedGhciBridge {
         if (isOpen()) {
             return;
         }
-        julia = jbuilder.start();
-        inp = julia.getInputStream();
-        errWatcher = new ModifiedGhciErrorConsoleWatcher(julia);
+        ghci = jbuilder.start();
+        inp = ghci.getInputStream();
+        errWatcher = new ModifiedGhciErrorConsoleWatcher(ghci);
         errWatcher.startWatching();
-        out = julia.getOutputStream();
+        out = ghci.getOutputStream();
+        final Instant start = new Instant();
         while (true) {
             final String s = readline();
             if (s == null) {
-                close();
-                throw new IOException("Bad Julia process");
+                if (start.isLessThan(Duration.TEN_SECONDS)) {
+                    try {
+                        FTimeUnit.MILLISECONDS.sleep(1);
+                    } catch (final InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    continue;
+                } else {
+                    close();
+                    throw new IOException("Bad Ghci process");
+                }
             }
-            if (s.startsWith("Julia Version ")) {
+            if (s.startsWith("GHCi, version ")) {
                 ver = s;
-            } else if (s.contains(TERMINATOR_RAW)) {
+                out.write(STARTUP_SCRIPT.getBytes());
+                out.write(TERMINATOR_SUFFIX_BYTES);
+                out.write(NEW_LINE);
+                out.flush();
+            } else if (s.equals(TERMINATOR_RAW)) {
                 break;
             }
         }
     }
 
     /**
-     * Stops a running Julia process.
+     * Stops a running Ghci process.
      */
     public void close() {
         if (!isOpen()) {
             return;
         }
-        julia.destroy();
-        julia = null;
+        ghci.destroy();
+        ghci = null;
         Closeables.closeQuietly(inp);
         inp = null;
         Closeables.closeQuietly(errWatcher);
@@ -138,9 +149,9 @@ public class ModifiedGhciBridge {
     }
 
     /**
-     * Gets Julia version.
+     * Gets Ghci version.
      */
-    public String getJuliaVersion() {
+    public String getGhciVersion() {
         return ver;
     }
 
@@ -162,17 +173,22 @@ public class ModifiedGhciBridge {
                 if (Strings.equalsAny(s, TERMINATOR_RAW, TERMINATOR)) {
                     return;
                 }
+                if (Strings.startsWith(s, PROMPT)) {
+                    continue;
+                }
                 rsp.add(s);
             }
         } catch (final IOException ex) {
-            throw new RuntimeException("JuliaBridge connection broken", ex);
+            throw new RuntimeException("GhciBridge connection broken", ex);
         }
     }
 
     public JsonNode getAsJsonNode(final String variable) {
-        final StringBuilder message = new StringBuilder("__ans__ = JSON.json(");
+        final StringBuilder message = new StringBuilder();
+        message.append("__get__ ( ");
         message.append(variable);
-        message.append("); println(sizeof(__ans__))");
+        message.append(" )");
+
         exec(message.toString(), "> get %s", variable);
 
         final String result = get();
@@ -181,6 +197,13 @@ public class ModifiedGhciBridge {
             checkError();
             if (result == null) {
                 checkErrorDelayed();
+            }
+            if (node instanceof TextNode) {
+                //Ghci does not support Nothing/null, we emulate it with an empty string
+                final TextNode cNode = (TextNode) node;
+                if (Strings.isBlankOrNullText(cNode.asText())) {
+                    return null;
+                }
             }
             if (node instanceof NullNode) {
                 return null;
@@ -195,26 +218,58 @@ public class ModifiedGhciBridge {
 
     private String get() {
         if (rsp.size() < 1) {
-            throw new RuntimeException("Invalid response from Julia REPL");
+            throw new RuntimeException("Invalid response from Ghci REPL");
         }
-        try {
-            //WORKAROUND: always extract the last output as the type because the executed code might have printed another line
-            final int n = Integer.parseInt(rsp.get(rsp.size() - 1));
-            if (n == 0) {
-                //Missing or Nothing
-                return null;
+        //WORKAROUND: always extract the last output as the type because the executed code might have printed another line
+        final int n = getRspLength();
+        if (n == 0) {
+            //Missing or Nothing
+            return null;
+        }
+        final StringBuilder sb = new StringBuilder();
+        boolean append = false;
+        for (int i = 0; i < rsp.size(); i++) {
+            final String line = rsp.get(i);
+            if (line.equals(VALUE_START)) {
+                append = true;
+                continue;
             }
-            write("write(stdout, __ans__)");
-            final byte[] buf = new byte[n];
-            read(buf);
-            return new String(buf);
-        } catch (final IOException ex) {
-            throw new RuntimeException("JuliaBridge connection broken", ex);
+            if (line.equals(VALUE_END)) {
+                break;
+            }
+            if (append) {
+                if (sb.length() > 0) {
+                    sb.append("\n");
+                }
+                sb.append(line);
+            }
         }
+        if (sb.length() != n) {
+            throw new IllegalStateException(
+                    "resultLength[" + sb.length() + "] != expectedLength[" + n + "]: " + sb.toString());
+        }
+        return unescape(sb.toString());
+    }
+
+    private String unescape(final String str) {
+        String unescaped = str;
+        unescaped = Strings.removeStart(unescaped, "\"");
+        unescaped = Strings.removeEnd(unescaped, "\"");
+        return Strings.unescapeJava(unescaped);
+    }
+
+    private int getRspLength() {
+        for (int i = rsp.size() - 1; i >= 0; i--) {
+            final String line = rsp.get(i);
+            if (line.startsWith(LENGTH_PREFIX)) {
+                return Integer.parseInt(Strings.removeStart(line, LENGTH_PREFIX.length()));
+            }
+        }
+        throw new IllegalStateException(Strings.join(rsp, "\n"));
     }
 
     /**
-     * Evaluates an expression in Julia.
+     * Evaluates an expression in Ghci.
      *
      * @param jcode
      *            expression to evaluate.
@@ -227,47 +282,10 @@ public class ModifiedGhciBridge {
 
     ////// private stuff
 
-    private void write(final String s) throws IOException {
-        IScriptTaskRunnerHaskell.LOG.trace("> " + s);
-        out.write(s.getBytes());
-        out.write(NEW_LINE);
-        out.flush();
-    }
-
     private void flush() throws IOException {
         while (inp.available() > 0) {
             inp.read();
         }
-    }
-
-    private int read(final byte[] buf) throws IOException {
-        final MutableInt ofs = new MutableInt(0);
-        //WORKAROUND: sleeping 10 ms between messages is way too slow
-        final ASpinWait spinWait = new ASpinWait() {
-            @Override
-            public boolean isConditionFulfilled() throws Exception {
-                if (interruptedCheck.check()) {
-                    checkError();
-                }
-                int n = inp.available();
-                while (n > 0 && !Thread.interrupted()) {
-                    final int m = buf.length - ofs.intValue();
-                    ofs.add(inp.read(buf, ofs.intValue(), n > m ? m : n));
-                    if (ofs.intValue() == buf.length) {
-                        return true;
-                    }
-                    n = inp.available();
-                }
-                return false;
-            }
-        };
-        try {
-            spinWait.awaitFulfill(System.nanoTime());
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-        IScriptTaskRunnerHaskell.LOG.trace("< (" + ofs + " bytes)");
-        return ofs.intValue();
     }
 
     private String readline() throws IOException {
@@ -298,13 +316,23 @@ public class ModifiedGhciBridge {
             return null;
         }
         final String s = readLineBuffer.getStringUtf8(0, readLineBufferPosition);
-        if (!Strings.equalsAny(s, TERMINATOR_RAW, TERMINATOR)) {
-            IScriptTaskRunnerHaskell.LOG.debug("< %s", s);
+        final String replaced = Strings.replace(s, PROMPT, "");
+        if (!Strings.equalsAny(replaced, TERMINATOR_RAW, TERMINATOR)) {
+            IScriptTaskRunnerHaskell.LOG.debug("< %s", replaced);
         }
-        return s;
+        return replaced;
     }
 
     protected void checkError() {
+        for (int i = 0; i < rsp.size(); i++) {
+            final String line = rsp.get(i);
+            if (line.startsWith("<interactive>:")) {
+                throw new IllegalStateException(Strings.join(rsp, "\n"));
+            } else if (line.startsWith(LENGTH_PREFIX)) {
+                break;
+            }
+        }
+
         final String error = getErrWatcher().getErrorMessage();
         if (error != null) {
             throw new IllegalStateException(error);
