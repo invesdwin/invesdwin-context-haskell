@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.node.NullNode;
 import de.invesdwin.context.haskell.runtime.contract.IScriptTaskRunnerHaskell;
 import de.invesdwin.context.haskell.runtime.ghci.GhciProperties;
 import de.invesdwin.context.integration.marshaller.MarshallerJsonJackson;
-import de.invesdwin.util.assertions.Assertions;
 import de.invesdwin.util.concurrent.loop.ASpinWait;
 import de.invesdwin.util.concurrent.loop.LoopInterruptedCheck;
 import de.invesdwin.util.error.Throwables;
@@ -220,7 +219,10 @@ public class ModifiedGhciBridge {
             write("putStrLn __ans__");
 
             read(promptBuf);
-            Assertions.checkTrue(ByteBuffers.equals(PROMPT_BYTES, promptBuf));
+            if ((ByteBuffers.equals(PROMPT_BYTES, promptBuf))) {
+                throw new IllegalStateException(
+                        "Expected default prompt \"" + PROMPT + "\" but got \"" + new String(promptBuf) + "\"");
+            }
 
             final byte[] buf = new byte[n];
             read(buf);
