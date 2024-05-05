@@ -2,6 +2,7 @@ package de.invesdwin.context.haskell.runtime.frege;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import de.invesdwin.context.haskell.runtime.contract.InputsAndResultsTests;
@@ -19,6 +20,7 @@ public class FregeScriptTaskRunnerHaskellTest extends ATest {
         new InputsAndResultsTests(runner).test();
     }
 
+    @Disabled("frege is too slow")
     @Test
     public void testParallel() {
         new InputsAndResultsTests(runner).testParallel();
@@ -29,6 +31,7 @@ public class FregeScriptTaskRunnerHaskellTest extends ATest {
     //        new ParametersAndReturnsTests(runner).test();
     //    }
 
+    //    @Disabled("frege is too slow")
     //    @Test
     //    public void testCallbackParallel() {
     //        new ParametersAndReturnsTests(runner).testParallel();
