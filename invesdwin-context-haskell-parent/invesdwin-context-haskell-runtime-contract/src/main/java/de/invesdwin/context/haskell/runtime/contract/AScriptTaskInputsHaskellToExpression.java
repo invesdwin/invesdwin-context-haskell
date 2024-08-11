@@ -42,7 +42,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
             final int cols = value[0].length;
             final StringBuilder sb = new StringBuilder("[");
             for (int row = 0; row < rows; row++) {
-                Assertions.checkEquals(value[row].length, cols);
+                final char[] valueRow = value[row];
+                Assertions.checkEquals(valueRow.length, cols);
                 if (row > 0) {
                     sb.append(",");
                 }
@@ -52,7 +53,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                         sb.append(",");
                     }
                     sb.append("'");
-                    sb.append(value[row][col]);
+                    sb.append(valueRow[col]);
                     sb.append("'");
                 }
                 sb.append("]");
@@ -106,7 +107,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
             final int cols = value[0].length;
             final StringBuilder sb = new StringBuilder("[");
             for (int row = 0; row < rows; row++) {
-                Assertions.checkEquals(value[row].length, cols);
+                final String[] valueRow = value[row];
+                Assertions.checkEquals(valueRow.length, cols);
                 if (row > 0) {
                     sb.append(",");
                 }
@@ -115,7 +117,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                     if (col > 0) {
                         sb.append(",");
                     }
-                    final String v = value[row][col];
+                    final String v = valueRow[col];
                     if (v == null) {
                         sb.append("\"\"");
                     } else {
@@ -172,7 +174,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
             final int cols = value[0].length;
             final StringBuilder sb = new StringBuilder("[");
             for (int row = 0; row < rows; row++) {
-                Assertions.checkEquals(value[row].length, cols);
+                final boolean[] valueRow = value[row];
+                Assertions.checkEquals(valueRow.length, cols);
                 if (row > 0) {
                     sb.append(",");
                 }
@@ -181,7 +184,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                     if (col > 0) {
                         sb.append(",");
                     }
-                    sb.append(booleanToString(value[row][col]));
+                    sb.append(booleanToString(valueRow[col]));
                 }
                 sb.append("]");
             }
@@ -235,7 +238,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
             final int cols = value[0].length;
             final StringBuilder sb = new StringBuilder("[");
             for (int row = 0; row < rows; row++) {
-                Assertions.checkEquals(value[row].length, cols);
+                final byte[] valueRow = value[row];
+                Assertions.checkEquals(valueRow.length, cols);
                 if (row > 0) {
                     sb.append(",");
                 }
@@ -244,7 +248,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                     if (col > 0) {
                         sb.append(",");
                     }
-                    sb.append(value[row][col]);
+                    sb.append(valueRow[col]);
                 }
                 sb.append("]");
             }
@@ -286,7 +290,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
             final int cols = value[0].length;
             final StringBuilder sb = new StringBuilder("[");
             for (int row = 0; row < rows; row++) {
-                Assertions.checkEquals(value[row].length, cols);
+                final short[] valueRow = value[row];
+                Assertions.checkEquals(valueRow.length, cols);
                 if (row > 0) {
                     sb.append(",");
                 }
@@ -295,7 +300,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                     if (col > 0) {
                         sb.append(",");
                     }
-                    sb.append(value[row][col]);
+                    sb.append(valueRow[col]);
                 }
                 sb.append("]");
             }
@@ -337,7 +342,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
             final int cols = value[0].length;
             final StringBuilder sb = new StringBuilder("[");
             for (int row = 0; row < rows; row++) {
-                Assertions.checkEquals(value[row].length, cols);
+                final int[] valueRow = value[row];
+                Assertions.checkEquals(valueRow.length, cols);
                 if (row > 0) {
                     sb.append(",");
                 }
@@ -346,7 +352,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                     if (col > 0) {
                         sb.append(",");
                     }
-                    sb.append(value[row][col]);
+                    sb.append(valueRow[col]);
                 }
                 sb.append("]");
             }
@@ -388,7 +394,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
             final int cols = value[0].length;
             final StringBuilder sb = new StringBuilder("[");
             for (int row = 0; row < rows; row++) {
-                Assertions.checkEquals(value[row].length, cols);
+                final long[] valueRow = value[row];
+                Assertions.checkEquals(valueRow.length, cols);
                 if (row > 0) {
                     sb.append(",");
                 }
@@ -397,7 +404,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                     if (col > 0) {
                         sb.append(",");
                     }
-                    sb.append(value[row][col]);
+                    sb.append(valueRow[col]);
                 }
                 sb.append("]");
             }
@@ -439,7 +446,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
             final int cols = value[0].length;
             final StringBuilder sb = new StringBuilder("[");
             for (int row = 0; row < rows; row++) {
-                Assertions.checkEquals(value[row].length, cols);
+                final float[] valueRow = value[row];
+                Assertions.checkEquals(valueRow.length, cols);
                 if (row > 0) {
                     sb.append(",");
                 }
@@ -448,7 +456,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                     if (col > 0) {
                         sb.append(",");
                     }
-                    sb.append(value[row][col]);
+                    sb.append(valueRow[col]);
                 }
                 sb.append("]");
             }
@@ -490,7 +498,8 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
             final int cols = value[0].length;
             final StringBuilder sb = new StringBuilder("[");
             for (int row = 0; row < rows; row++) {
-                Assertions.checkEquals(value[row].length, cols);
+                final double[] valueRow = value[row];
+                Assertions.checkEquals(valueRow.length, cols);
                 if (row > 0) {
                     sb.append(",");
                 }
@@ -499,7 +508,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                     if (col > 0) {
                         sb.append(",");
                     }
-                    sb.append(value[row][col]);
+                    sb.append(valueRow[col]);
                 }
                 sb.append("]");
             }
