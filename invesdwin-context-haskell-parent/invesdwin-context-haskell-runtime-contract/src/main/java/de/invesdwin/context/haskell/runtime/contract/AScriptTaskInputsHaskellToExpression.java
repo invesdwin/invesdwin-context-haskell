@@ -3,6 +3,7 @@ package de.invesdwin.context.haskell.runtime.contract;
 import javax.annotation.concurrent.NotThreadSafe;
 
 import de.invesdwin.util.assertions.Assertions;
+import de.invesdwin.util.math.Doubles;
 
 @NotThreadSafe
 public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTaskInputsHaskell {
@@ -467,7 +468,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
 
     @Override
     public void putDouble(final String variable, final double value) {
-        putExpression(variable, String.valueOf(value));
+        putExpression(variable, doubleToString(value));
     }
 
     @Override
@@ -480,7 +481,7 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                 if (i > 0) {
                     sb.append(",");
                 }
-                sb.append(value[i]);
+                sb.append(doubleToString(value[i]));
             }
             sb.append("]");
             putExpression(variable, sb.toString());
@@ -508,12 +509,20 @@ public abstract class AScriptTaskInputsHaskellToExpression implements IScriptTas
                     if (col > 0) {
                         sb.append(",");
                     }
-                    sb.append(valueRow[col]);
+                    sb.append(doubleToString(valueRow[col]));
                 }
                 sb.append("]");
             }
             sb.append("]");
             putExpression(variable, sb.toString());
+        }
+    }
+
+    protected String doubleToString(final double value) {
+        if (Doubles.isNaN(value)) {
+            return "0/0";
+        } else {
+            return String.valueOf(value);
         }
     }
 
